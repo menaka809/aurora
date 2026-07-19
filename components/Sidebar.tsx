@@ -38,15 +38,19 @@ export default function Sidebar() {
         collapsed ? "w-[74px]" : "w-64"
       }`}
     >
-      {/* Brand */}
-      <div className="flex h-16 items-center gap-2.5 px-5">
+      {/* Brand — click to return to the overview */}
+      <Link
+        href="/"
+        aria-label="Aurora — go to overview"
+        className="flex h-16 items-center gap-2.5 px-5 transition-opacity hover:opacity-80"
+      >
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
           <Sparkles className="h-4 w-4" />
         </span>
         {!collapsed && (
           <span className="font-semibold tracking-tight text-fg">Aurora</span>
         )}
-      </div>
+      </Link>
 
       {/* Nav */}
       <nav className="flex flex-1 flex-col gap-1 px-3 py-4">
