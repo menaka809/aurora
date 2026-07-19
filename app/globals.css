@@ -1,0 +1,180 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-elevated: var(--elevated);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-soft: var(--primary-soft);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-border: var(--border);
+
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+/* ---- Dark (default) ---- */
+:root {
+  --bg: #0a0b0f;
+  --surface: #14161f;
+  --elevated: #191c26;
+  --fg: #edeef2;
+  --muted: #6b6f7b;
+  --primary: #5b8def;
+  --primary-soft: #2a3350;
+  --success: #3fd68c;
+  --warning: #f5a623;
+  --danger: #f2555a;
+  --border: #22252f;
+  --glass-rgb: 20 22 31;
+  --grid: rgba(255, 255, 255, 0.04);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+  --app-glow: radial-gradient(
+    900px 480px at 78% -8%,
+    rgba(91, 141, 239, 0.08),
+    transparent 60%
+  );
+  color-scheme: dark;
+}
+
+/* ---- Light ---- */
+.light {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --elevated: #ffffff;
+  --fg: #14161f;
+  --muted: #71757f;
+  --primary: #3f74dd;
+  --primary-soft: #e6edfc;
+  --success: #12a56b;
+  --warning: #c67f12;
+  --danger: #d8434a;
+  --border: #e6e8ee;
+  --glass-rgb: 255 255 255;
+  --grid: rgba(0, 0, 0, 0.05);
+  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04),
+    0 6px 16px -8px rgba(16, 24, 40, 0.1);
+  --app-glow: radial-gradient(
+    900px 480px at 78% -8%,
+    rgba(91, 141, 239, 0.07),
+    transparent 60%
+  );
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg);
+  background-image: var(--app-glow);
+  background-attachment: fixed;
+  color: var(--fg);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+/* Soft elevation for flat surface cards */
+.card-shadow {
+  box-shadow: var(--shadow-card);
+}
+
+/* Smooth theme cross-fade on the framed surfaces */
+.theme-tint {
+  transition: background-color 0.5s ease, border-color 0.5s ease,
+    color 0.5s ease;
+}
+
+/* Frosted glass — reserved for the top KPI cards only */
+.glass {
+  background: rgba(var(--glass-rgb) / 0.6);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+
+.tabular {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+::selection {
+  background: color-mix(in srgb, var(--primary) 30%, transparent);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 8px;
+}
+
+/* Recharts: theme-aware axes/grid + kill default focus outlines */
+.recharts-surface {
+  overflow: visible;
+}
+.recharts-wrapper:focus,
+.recharts-surface:focus,
+.recharts-wrapper *:focus {
+  outline: none;
+}
+.recharts-cartesian-grid line {
+  stroke: var(--grid);
+}
+.recharts-cartesian-axis-tick text {
+  fill: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-feature-settings: "tnum";
+}
+.recharts-cartesian-axis-line,
+.recharts-cartesian-axis .recharts-cartesian-axis-tick-line {
+  stroke: transparent;
+}
+.recharts-tooltip-wrapper {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Print: force a clean, light, chrome-free document */
+@media print {
+  :root,
+  .light {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --elevated: #ffffff;
+    --fg: #14161f;
+    --muted: #555a63;
+    --border: #d5d8de;
+    --grid: rgba(0, 0, 0, 0.08);
+  }
+  body {
+    background: #fff !important;
+    color: #14161f !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+}
