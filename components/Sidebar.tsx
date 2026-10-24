@@ -14,6 +14,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useUI } from "@/lib/store";
+import { useHydrated } from "@/lib/useHydrated";
 import UserMenu from "./UserMenu";
 
 type NavItem = { label: string; href: string; icon: LucideIcon };
@@ -28,7 +29,7 @@ const NAV: NavItem[] = [
 export default function Sidebar() {
   const pathname = usePathname();
   const collapsedRaw = useUI((s) => s.sidebarCollapsed);
-  const hydrated = useUI((s) => s.hydrated);
+  const hydrated = useHydrated();
   const toggle = useUI((s) => s.toggleSidebar);
   const collapsed = hydrated ? collapsedRaw : false;
 
