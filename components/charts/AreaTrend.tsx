@@ -34,11 +34,13 @@ export default function AreaTrend({
 }) {
   const gid = `area-${dataKey}`;
   const interval = Math.max(0, Math.floor(data.length / 6) - 1);
+  // Font size is passed to Recharts too, so its label-overlap maths matches the CSS.
+  const tick = { fontSize: 11 };
 
   return (
     <div style={{ height }} className="w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 8, right: 8, left: 4, bottom: 0 }}>
+        <AreaChart data={data} margin={{ top: 8, right: 12, left: 4, bottom: 0 }}>
           <defs>
             <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor={color} stopOpacity={0.28} />
@@ -52,13 +54,21 @@ export default function AreaTrend({
             axisLine={false}
             interval={interval}
             minTickGap={16}
-            dy={8}
+            dy={12}
+            height={36}
+            tick={tick}
+            // Keeps the first and last dates inside the card and clear of the y-axis labels.
+            padding={{ left: 28, right: 16 }}
           />
           <YAxis
             tickLine={false}
             axisLine={false}
             width={58}
             tickMargin={8}
+            tick={tick}
+            // Fit the scale to the data so the trend is visible (not a flat line near the top).
+            domain={["auto", "auto"]}
+            tickCount={5}
             tickFormatter={(v) => compact(v as number)}
           />
           <Tooltip
