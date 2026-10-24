@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import ThemeSync from "@/components/ThemeSync";
 
 const geistSans = Geist({
@@ -40,7 +41,7 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         <ThemeSync />
-        {children}
+        <NuqsAdapter>{children}</NuqsAdapter>
       </body>
     </html>
   );
