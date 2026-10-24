@@ -18,7 +18,7 @@ export function formatPercent(n: number): string {
   return `${n.toFixed(1)}%`;
 }
 
-const MONTHS = [
+export const MONTHS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
@@ -26,6 +26,13 @@ const MONTHS = [
 export function formatDate(iso: string): string {
   const [y, m, d] = iso.split("-").map(Number);
   return `${MONTHS[m - 1]} ${d}, ${y}`;
+}
+
+/** 0 → "Today", 1 → "Yesterday", n → "nd ago". */
+export function formatDaysAgo(days: number): string {
+  if (days <= 0) return "Today";
+  if (days === 1) return "Yesterday";
+  return `${days}d ago`;
 }
 
 export function formatValue(
