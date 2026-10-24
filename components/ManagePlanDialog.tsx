@@ -77,12 +77,12 @@ export default function ManagePlanDialog({
                 <span className="flex items-center gap-2 text-sm font-medium text-fg">
                   {plan}
                   {plan === c.plan && (
-                    <span className="rounded bg-surface px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted">
+                    <span className="rounded bg-surface px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
                       Current
                     </span>
                   )}
                 </span>
-                <span className="mt-0.5 block text-xs text-muted">{BLURB[plan]}</span>
+                <span className="mt-0.5 block text-xs text-muted-foreground">{BLURB[plan]}</span>
               </span>
               {active && <Check className="h-4 w-4 shrink-0 text-primary" />}
             </button>

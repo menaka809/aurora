@@ -21,7 +21,7 @@ export default function ConversionFunnel({ stages }: { stages: FunnelStage[] }) 
                   {formatNumber(s.value)}
                 </span>
                 {i > 0 && (
-                  <span className="tabular w-12 text-right text-xs text-muted">
+                  <span className="tabular w-12 text-right text-xs text-muted-foreground">
                     {conv.toFixed(1)}%
                   </span>
                 )}

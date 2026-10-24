@@ -46,7 +46,7 @@ const TL_ICON: Record<TimelineKind, { icon: LucideIcon; cls: string }> = {
   signup: { icon: UserPlus, cls: "bg-primary/12 text-primary" },
   payment: { icon: CreditCard, cls: "bg-warning/12 text-warning" },
   upgrade: { icon: ArrowUpCircle, cls: "bg-success/12 text-success" },
-  login: { icon: LogIn, cls: "bg-muted/15 text-muted" },
+  login: { icon: LogIn, cls: "bg-muted-foreground/15 text-muted-foreground" },
   ticket: { icon: LifeBuoy, cls: "bg-warning/12 text-warning" },
   churn: { icon: UserMinus, cls: "bg-danger/12 text-danger" },
 };
@@ -86,7 +86,7 @@ export default function CustomerProfile({ c, today }: { c: CP; today: string }) 
       <motion.div variants={rise}>
         <Link
           href="/customers"
-          className="inline-flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-fg"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-fg"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to customers
@@ -111,7 +111,7 @@ export default function CustomerProfile({ c, today }: { c: CP; today: string }) 
                   </h2>
                   <StatusBadge status={c.status} />
                 </div>
-                <p className="mt-0.5 text-sm text-muted">{c.email}</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">{c.email}</p>
               </div>
             </div>
             <div className="flex gap-2">
@@ -155,7 +155,7 @@ export default function CustomerProfile({ c, today }: { c: CP; today: string }) 
           <div className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-3 lg:grid-cols-5">
             {stats.map((s) => (
               <div key={s.label} className="bg-surface p-4">
-                <p className="text-xs text-muted">{s.label}</p>
+                <p className="text-xs text-muted-foreground">{s.label}</p>
                 <p className="tabular mt-1 text-lg font-semibold text-fg">
                   {s.value}
                 </p>
@@ -190,12 +190,12 @@ export default function CustomerProfile({ c, today }: { c: CP; today: string }) 
                         <p className="text-sm text-fg">
                           {e.title}
                           {e.meta && (
-                            <span className="tabular ml-2 text-muted">
+                            <span className="tabular ml-2 text-muted-foreground">
                               {e.meta}
                             </span>
                           )}
                         </p>
-                        <p className="mt-0.5 text-xs text-muted">
+                        <p className="mt-0.5 text-xs text-muted-foreground">
                           {formatDate(e.date)}
                         </p>
                       </div>
@@ -212,7 +212,7 @@ export default function CustomerProfile({ c, today }: { c: CP; today: string }) 
               <CardHeader title="Payments" subtitle="Recent invoices" />
               <table className="mt-3 w-full text-sm">
                 <thead>
-                  <tr className="border-y border-border text-xs uppercase tracking-wide text-muted">
+                  <tr className="border-y border-border text-xs uppercase tracking-wide text-muted-foreground">
                     <th className="px-5 py-2.5 text-left font-medium">Invoice</th>
                     <th className="px-5 py-2.5 text-left font-medium">Date</th>
                     <th className="px-5 py-2.5 text-left font-medium">Amount</th>
@@ -225,10 +225,10 @@ export default function CustomerProfile({ c, today }: { c: CP; today: string }) 
                       key={p.id}
                       className="border-b border-border last:border-0"
                     >
-                      <td className="tabular px-5 py-3 text-muted">
+                      <td className="tabular px-5 py-3 text-muted-foreground">
                         {p.invoice}
                       </td>
-                      <td className="px-5 py-3 text-muted">
+                      <td className="px-5 py-3 text-muted-foreground">
                         {formatDate(p.date)}
                       </td>
                       <td className="tabular px-5 py-3 font-medium text-fg">
@@ -241,7 +241,7 @@ export default function CustomerProfile({ c, today }: { c: CP; today: string }) 
                   ))}
                   {c.payments.length === 0 && (
                     <tr>
-                      <td colSpan={4} className="px-5 py-8 text-center text-muted">
+                      <td colSpan={4} className="px-5 py-8 text-center text-muted-foreground">
                         No payments yet.
                       </td>
                     </tr>
@@ -258,8 +258,8 @@ export default function CustomerProfile({ c, today }: { c: CP; today: string }) 
               <div className="p-5 pt-3">
                 {c.tickets.length === 0 ? (
                   <div className="flex flex-col items-center gap-2 py-8 text-center">
-                    <LifeBuoy className="h-6 w-6 text-muted/50" />
-                    <p className="text-sm text-muted">
+                    <LifeBuoy className="h-6 w-6 text-muted-foreground/50" />
+                    <p className="text-sm text-muted-foreground">
                       No tickets — a happy customer.
                     </p>
                   </div>
@@ -272,7 +272,7 @@ export default function CustomerProfile({ c, today }: { c: CP; today: string }) 
                       >
                         <div className="min-w-0">
                           <p className="truncate text-sm text-fg">{t.subject}</p>
-                          <p className="text-xs text-muted">
+                          <p className="text-xs text-muted-foreground">
                             {t.priority} priority · {formatDate(t.date)}
                           </p>
                         </div>
@@ -316,7 +316,7 @@ export default function CustomerProfile({ c, today }: { c: CP; today: string }) 
                 {c.tags.map((t) => (
                   <span
                     key={t}
-                    className="rounded-md border border-border bg-elevated px-2.5 py-1 text-xs text-muted"
+                    className="rounded-md border border-border bg-elevated px-2.5 py-1 text-xs text-muted-foreground"
                   >
                     {t}
                   </span>
@@ -335,7 +335,7 @@ export default function CustomerProfile({ c, today }: { c: CP; today: string }) 
                     className="rounded-lg border border-border bg-elevated p-3"
                   >
                     <p className="text-sm text-fg">{n.text}</p>
-                    <p className="mt-2 text-xs text-muted">
+                    <p className="mt-2 text-xs text-muted-foreground">
                       {n.author} · {formatDate(n.date)}
                     </p>
                   </div>
@@ -350,7 +350,7 @@ export default function CustomerProfile({ c, today }: { c: CP; today: string }) 
       {planOpen && (
         <ManagePlanDialog open onOpenChange={setPlanOpen} customer={c} today={today} />
       )}
-      <MessageSheet open={messageOpen} onOpenChange={setMessageOpen} customer={c} />
+      <MessageSheet open={messageOpen} onOpenChange={setMessageOpen} recipients={[c]} />
     </motion.div>
   );
 }
@@ -366,9 +366,9 @@ function Detail({
 }) {
   return (
     <div className="flex items-start gap-3">
-      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted" />
+      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
       <div className="min-w-0">
-        <dt className="text-xs text-muted">{label}</dt>
+        <dt className="text-xs text-muted-foreground">{label}</dt>
         <dd className="truncate text-fg">{value}</dd>
       </div>
     </div>
@@ -378,7 +378,7 @@ function Detail({
 function PayStatus({ status }: { status: "paid" | "refunded" | "failed" }) {
   const map = {
     paid: "bg-success/10 text-success",
-    refunded: "bg-muted/15 text-muted",
+    refunded: "bg-muted-foreground/15 text-muted-foreground",
     failed: "bg-danger/10 text-danger",
   } as const;
   const label = { paid: "Paid", refunded: "Refunded", failed: "Failed" }[status];

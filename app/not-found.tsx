@@ -7,11 +7,11 @@ export default function NotFound() {
       <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 text-primary">
         <Sparkles className="h-6 w-6" />
       </span>
-      <p className="tabular text-sm text-muted">404</p>
+      <p className="tabular text-sm text-muted-foreground">404</p>
       <h1 className="text-2xl font-semibold tracking-tight text-fg">
         This page doesn&apos;t exist
       </h1>
-      <p className="max-w-sm text-sm text-muted">
+      <p className="max-w-sm text-sm text-muted-foreground">
         The link may be broken, or the page may have moved.
       </p>
       <Link

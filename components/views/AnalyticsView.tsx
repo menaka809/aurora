@@ -63,7 +63,7 @@ export default function AnalyticsView({
     >
       {/* Range control (applies to the time-series charts) */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted">
+        <p className="text-sm text-muted-foreground">
           Showing the last <span className="text-fg">{range} days</span>
         </p>
         <Segmented

@@ -67,7 +67,7 @@ export default function Sidebar() {
               href={item.href}
               title={collapsed ? item.label : undefined}
               className={`group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
-                active ? "text-fg" : "text-muted hover:text-fg"
+                active ? "text-fg" : "text-muted-foreground hover:text-fg"
               }`}
             >
               {active && (
@@ -96,7 +96,7 @@ export default function Sidebar() {
       <div className="border-t border-border p-3">
         <button
           onClick={toggle}
-          className="mb-2 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted transition-colors hover:text-fg"
+          className="mb-2 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:text-fg"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? (

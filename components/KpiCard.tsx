@@ -33,7 +33,7 @@ export default function KpiCard({ kpi, index }: { kpi: Kpi; index: number }) {
       />
 
       <div className="relative flex items-start justify-between gap-3">
-        <span className="text-xs text-muted">{kpi.label}</span>
+        <span className="text-xs text-muted-foreground">{kpi.label}</span>
         <span
           className={`flex shrink-0 items-center gap-0.5 rounded-full px-2 py-0.5 text-xs font-medium tabular ${
             good ? "bg-success/10 text-success" : "bg-danger/10 text-danger"

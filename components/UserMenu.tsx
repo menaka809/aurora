@@ -34,11 +34,11 @@ export default function UserMenu({ collapsed }: { collapsed: boolean }) {
                 <span className="block truncate text-sm text-fg">
                   {profile.fullName}
                 </span>
-                <span className="block truncate text-xs text-muted">
+                <span className="block truncate text-xs text-muted-foreground">
                   {profile.company}
                 </span>
               </span>
-              <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted" />
+              <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
             </>
           )}
         </span>
@@ -46,7 +46,7 @@ export default function UserMenu({ collapsed }: { collapsed: boolean }) {
     >
       <div className="border-b border-border px-3 py-2.5">
         <p className="truncate text-sm font-medium text-fg">{profile.fullName}</p>
-        <p className="truncate text-xs text-muted">{profile.email}</p>
+        <p className="truncate text-xs text-muted-foreground">{profile.email}</p>
         <span className="mt-1.5 inline-block rounded bg-primary/10 px-1.5 py-0.5 text-[11px] font-medium text-primary">
           {profile.company} · {profile.role}
         </span>

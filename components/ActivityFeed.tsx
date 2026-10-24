@@ -32,7 +32,7 @@ const row: Variants = {
 export default function ActivityFeed({ items }: { items: ActivityItem[] }) {
   if (items.length === 0) {
     return (
-      <p className="px-5 py-8 text-center text-sm text-muted">
+      <p className="px-5 py-8 text-center text-sm text-muted-foreground">
         No account activity in the last two weeks.
       </p>
     );
@@ -53,11 +53,11 @@ export default function ActivityFeed({ items }: { items: ActivityItem[] }) {
               >
                 <Icon className="h-4 w-4" />
               </span>
-              <p className="min-w-0 flex-1 truncate text-sm text-muted">
+              <p className="min-w-0 flex-1 truncate text-sm text-muted-foreground">
                 <span className="font-medium text-fg">{a.who}</span> {a.action}
                 {a.meta && <span className="font-medium text-fg"> {a.meta}</span>}
               </p>
-              <span className="tabular shrink-0 text-xs text-muted">
+              <span className="tabular shrink-0 text-xs text-muted-foreground">
                 {formatDaysAgo(a.daysAgo)}
               </span>
             </Link>
