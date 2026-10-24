@@ -149,6 +149,26 @@ body {
   outline: none;
 }
 
+/* Dialog / sheet entrance (Radix sets data-state) */
+@keyframes modal-fade-in {
+  from { opacity: 0; }
+}
+@keyframes modal-pop-in {
+  from { opacity: 0; transform: scale(0.97); }
+}
+@keyframes modal-sheet-in {
+  from { transform: translateX(100%); }
+}
+.modal-fade[data-state="open"] {
+  animation: modal-fade-in 0.2s ease-out;
+}
+.modal-pop[data-state="open"] {
+  animation: modal-pop-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.modal-sheet[data-state="open"] {
+  animation: modal-sheet-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
