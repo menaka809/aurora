@@ -2,10 +2,9 @@
 
 import { motion } from "framer-motion";
 import { formatCurrency } from "@/lib/format";
-import { planBreakdown } from "@/lib/insights";
+import type { PlanSlice } from "@/lib/data/types";
 
-export default function PlanBreakdown() {
-  const data = planBreakdown();
+export default function PlanBreakdown({ data }: { data: PlanSlice[] }) {
 
   return (
     <div className="space-y-5 p-5 pt-2">

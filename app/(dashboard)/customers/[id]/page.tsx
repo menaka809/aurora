@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { CUSTOMERS, getCustomer, getProfile } from "@/lib/customers";
+import { getCustomer, getCustomers, getProfile, getToday } from "@/lib/data";
 import CustomerProfile from "@/components/CustomerProfile";
 
-export function generateStaticParams() {
-  return CUSTOMERS.map((c) => ({ id: c.id }));
+export async function generateStaticParams() {
+  const customers = await getCustomers();
+  return customers.map((c) => ({ id: c.id }));
 }
 
 export async function generateMetadata({
@@ -13,8 +14,8 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const c = getCustomer(id);
-  return { title: c ? `${c.name} — Aurora` : "Customer — Aurora" };
+  const c = await getCustomer(id);
+  return { title: c ? `${c.name} — Aurora` : "Customer not found — Aurora" };
 }
 
 export default async function CustomerDetailPage({
@@ -23,7 +24,7 @@ export default async function CustomerDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const c = getCustomer(id);
-  if (!c) notFound();
-  return <CustomerProfile c={getProfile(c)} />;
+  const [profile, today] = await Promise.all([getProfile(id), getToday()]);
+  if (!profile) notFound();
+  return <CustomerProfile c={profile} today={today} />;
 }

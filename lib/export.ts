@@ -1,9 +1,9 @@
 import { STATUS_LABEL, type Customer } from "./customers";
 
-const HEADERS = ["Name", "Email", "Plan", "MRR", "Status", "Joined", "Seats"];
+const HEADERS = ["Name", "Email", "Company", "Plan", "MRR", "Status", "Joined", "Seats"];
 
 function rowValues(c: Customer): (string | number)[] {
-  return [c.name, c.email, c.plan, c.mrr, STATUS_LABEL[c.status], c.joined, c.seats];
+  return [c.name, c.email, c.company, c.plan, c.mrr, STATUS_LABEL[c.status], c.joined, c.seats];
 }
 
 function esc(v: string | number, delim: string): string {

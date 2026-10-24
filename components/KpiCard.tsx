@@ -5,7 +5,7 @@ import { ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { useCountUp } from "@/lib/useCountUp";
 import { formatValue } from "@/lib/format";
 import Sparkline from "./charts/Sparkline";
-import type { Kpi } from "@/lib/metrics";
+import type { Kpi } from "@/lib/data/types";
 
 const item: Variants = {
   hidden: { opacity: 0, y: 16 },
@@ -44,7 +44,8 @@ export default function KpiCard({ kpi, index }: { kpi: Kpi; index: number }) {
           ) : (
             <ArrowDownRight className="h-3 w-3" />
           )}
-          {kpi.delta}%
+          {kpi.delta}
+          {kpi.deltaUnit === "%" ? "%" : " pts"}
         </span>
       </div>
 
