@@ -51,7 +51,16 @@ const CO_B = [
 ];
 
 // Account managers are staff, so keep them out of the customer name space.
-const MANAGERS = ["Elena Fischer", "Tom Alvarez", "Grace Lin", "Rafael Souza"];
+export const MANAGERS = ["Elena Fischer", "Tom Alvarez", "Grace Lin", "Rafael Souza"];
+
+/** Account-health signals used for filtering and the "At risk"-style views. */
+export type Health = "at_risk" | "high_value" | "new" | "win_back";
+export const HEALTH_LABEL: Record<Health, string> = {
+  at_risk: "At risk",
+  high_value: "High value",
+  new: "New",
+  win_back: "Win-back target",
+};
 
 const PLAN_BASE: Record<Plan, number> = {
   Starter: 79,
@@ -206,6 +215,7 @@ export type CustomerProfile = Customer & {
   tenureMonths: number;
   lastLoginDays: number;
   manager: string;
+  health: Health[];
   tags: string[];
   payments: Payment[];
   /** Next invoice date for paying accounts. */
@@ -258,19 +268,25 @@ export function getProfile(c: Customer, todayMs: number): CustomerProfile {
       ? toISO(joinedMs + invoiceCount * BILLING_DAYS * DAY_MS)
       : null;
 
+  // Most live accounts were seen recently; a long tail has gone quiet.
   const lastLoginDays = Math.min(
     tenureDays,
-    c.status === "churned" ? churnDaysAgo + Math.floor(rand() * 5) : Math.floor(rand() * 4)
+    c.status === "churned"
+      ? churnDaysAgo + Math.floor(rand() * 5)
+      : Math.floor(rand() ** 3 * 46)
   );
   const manager = MANAGERS[hashStr(c.name) % MANAGERS.length];
 
-  const tags: string[] = [c.plan];
-  if (c.listPrice >= 2000) tags.push("High value");
+  const dormant = c.status === "active" && lastLoginDays >= 21;
+  const health: Health[] = [];
+  if (c.status === "past_due" || dormant) health.push("at_risk");
+  if (c.listPrice >= 2000 && c.status !== "churned") health.push("high_value");
+  if (tenureDays <= 90 && c.status !== "churned") health.push("new");
+  if (c.status === "churned") health.push("win_back");
+
+  const tags: string[] = [c.plan, ...health.map((h) => HEALTH_LABEL[h])];
   if (c.seats >= 50) tags.push("Power user");
-  if (c.status === "past_due") tags.push("At risk");
   if (c.status === "trial") tags.push("In trial");
-  if (tenureDays <= 90 && c.status !== "churned") tags.push("New");
-  if (c.status === "churned") tags.push("Win-back target");
 
   // Support tickets, opened while the account was active.
   const ticketCount = Math.floor(rand() * 3);
@@ -366,6 +382,7 @@ export function getProfile(c: Customer, todayMs: number): CustomerProfile {
     ltv,
     tenureMonths,
     lastLoginDays,
+    health,
     manager,
     tags,
     payments,

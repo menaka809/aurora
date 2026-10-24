@@ -6,6 +6,15 @@ import { cache } from "react";
 import { todayUTC, daysBefore } from "@/lib/time";
 import { CHANNELS, pctChange, seriesEnding } from "@/lib/metrics";
 import { buildCustomers, getProfile as buildProfile, PLANS } from "@/lib/customers";
+import {
+  applyCustomerQuery,
+  filterRows,
+  sortRows,
+  type CustomerPage,
+  type CustomerQuery,
+  type CustomerRow,
+} from "@/lib/customers-query";
+import { BUILT_IN_VIEWS } from "@/lib/views";
 import type {
   ActivityItem,
   Channel,
@@ -26,7 +35,24 @@ const snapshot = cache(() => {
   const today = todayUTC();
   const series = seriesEnding(today, HISTORY_DAYS);
   const customers = buildCustomers(today, series[series.length - 1].mrr);
-  return { today, series, customers };
+  const profiles = customers.map((c) => buildProfile(c, today));
+  const rows: CustomerRow[] = profiles.map((p) => ({
+    id: p.id,
+    name: p.name,
+    email: p.email,
+    company: p.company,
+    plan: p.plan,
+    listPrice: p.listPrice,
+    mrr: p.mrr,
+    status: p.status,
+    joined: p.joined,
+    seats: p.seats,
+    manager: p.manager,
+    lastLoginDays: p.lastLoginDays,
+    ltv: p.ltv,
+    health: p.health,
+  }));
+  return { today, series, customers, profiles, rows };
 });
 
 const round1 = (n: number) => Math.round(n * 10) / 10;
@@ -148,11 +174,11 @@ export async function getPlanBreakdown(): Promise<PlanSlice[]> {
 
 /** Latest account events, built from the same records as the profiles. */
 export async function getActivity(limit = 7, maxPayments = 3): Promise<ActivityItem[]> {
-  const { customers, today } = snapshot();
+  const { profiles: customers, today } = snapshot();
   const events: ActivityItem[] = [];
 
   for (const c of customers) {
-    for (const e of buildProfile(c, today).timeline) {
+    for (const e of c.timeline) {
       const daysAgo = daysBefore(e.date, today);
       if (daysAgo > 14) continue;
       const base = { id: e.id, customerId: c.id, who: c.name, daysAgo };
@@ -201,7 +227,32 @@ export async function getCustomer(id: string): Promise<Customer | undefined> {
 }
 
 export async function getProfile(id: string): Promise<CustomerProfile | undefined> {
-  const { customers, today } = snapshot();
-  const c = customers.find((x) => x.id === id);
-  return c ? buildProfile(c, today) : undefined;
+  return snapshot().profiles.find((p) => p.id === id);
 }
+
+/** One filtered, sorted page of the customers table. */
+export async function getCustomerPage(query: CustomerQuery): Promise<CustomerPage> {
+  const { rows, today } = snapshot();
+  return applyCustomerQuery(rows, query, today);
+}
+
+/** Row counts for each built-in view tab. */
+export async function getViewCounts(): Promise<Record<string, number>> {
+  const { rows, today } = snapshot();
+  return Object.fromEntries(
+    BUILT_IN_VIEWS.map((v) => [v.id, filterRows(rows, v.filters, { todayMs: today }).length])
+  );
+}
+
+/** Rows for CSV export: specific ids, or everything matching the query. */
+export async function getCustomerRowsForExport(
+  query: CustomerQuery,
+  ids: string[] | null
+): Promise<CustomerRow[]> {
+  const { rows, today } = snapshot();
+  const picked = ids ? rows.filter((r) => ids.includes(r.id)) : filterRows(rows, query, { todayMs: today });
+  return sortRows(picked, query.sort, query.dir);
+}
+
+/** Staff who can own accounts, for the bulk "Assign manager" action. */
+export { MANAGERS } from "@/lib/customers";
