@@ -2,16 +2,16 @@
 
 import { motion } from "framer-motion";
 import { formatNumber } from "@/lib/format";
-import { FUNNEL } from "@/lib/insights";
+import type { FunnelStage } from "@/lib/data/types";
 
-export default function ConversionFunnel() {
-  const max = FUNNEL[0].value;
+export default function ConversionFunnel({ stages }: { stages: FunnelStage[] }) {
+  const max = stages[0].value;
 
   return (
     <div className="space-y-5 p-5 pt-2">
-      {FUNNEL.map((s, i) => {
+      {stages.map((s, i) => {
         const width = (s.value / max) * 100;
-        const conv = i > 0 ? (s.value / FUNNEL[i - 1].value) * 100 : 100;
+        const conv = i > 0 ? (s.value / stages[i - 1].value) * 100 : 100;
         return (
           <div key={s.stage}>
             <div className="mb-1.5 flex items-center justify-between text-sm">

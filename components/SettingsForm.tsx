@@ -1,12 +1,14 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useEffect } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { Card, CardHeader } from "@/components/Card";
 import Segmented from "@/components/Segmented";
-import { useUI, type Theme } from "@/lib/store";
+import { DEFAULT_PROFILE, useUI, type Theme } from "@/lib/store";
+import { useHydrated } from "@/lib/useHydrated";
 import { toast } from "@/lib/toast";
 
 const schema = z.object({
@@ -15,11 +17,7 @@ const schema = z.object({
   company: z.string().min(2, "Enter your company"),
   role: z.enum(["Admin", "Editor", "Viewer"]),
   timezone: z.string().min(1, "Select a timezone"),
-  bio: z
-    .string()
-    .max(160, "Keep it under 160 characters")
-    .optional()
-    .or(z.literal("")),
+  bio: z.string().max(160, "Keep it under 160 characters"),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -34,29 +32,31 @@ const TIMEZONES = [
 ];
 
 export default function SettingsForm() {
+  const profile = useUI((s) => s.profile);
+  const setProfile = useUI((s) => s.setProfile);
+  const hydrated = useHydrated();
+
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      fullName: "Jordan Blake",
-      email: "jordan@aurora.app",
-      company: "Aurora Labs",
-      role: "Admin",
-      timezone: "UTC−05:00 · Eastern",
-      bio: "Head of Growth. I live in the dashboard.",
-    },
+    // Server HTML uses the defaults; the saved profile loads after hydration.
+    defaultValues: DEFAULT_PROFILE,
   });
 
-  const bio = watch("bio") ?? "";
+  useEffect(() => {
+    if (hydrated) reset(profile);
+  }, [hydrated, profile, reset]);
+
+  const bio = useWatch({ control, name: "bio" }) ?? "";
 
   const onSubmit = async (data: FormValues) => {
-    await new Promise((r) => setTimeout(r, 900));
-    reset(data, { keepValues: true });
+    await new Promise((r) => setTimeout(r, 600));
+    setProfile(data);
     toast("Changes saved", {
       description: "Your profile is up to date.",
       type: "success",
@@ -130,7 +130,7 @@ export default function SettingsForm() {
 function AppearanceCard() {
   const theme = useUI((s) => s.theme);
   const setTheme = useUI((s) => s.setTheme);
-  const hydrated = useUI((s) => s.hydrated);
+  const hydrated = useHydrated();
 
   return (
     <Card>

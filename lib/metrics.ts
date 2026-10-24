@@ -1,5 +1,9 @@
-// Deterministic 90-day metric series. A seeded PRNG keeps values identical on
-// server and client so there's no hydration mismatch and no random flicker.
+// Synthetic daily metrics. Every value is a pure function of its calendar day,
+// so the chart window can end "today" while past days never change.
+
+import { hashStr, mulberry32 } from "./random";
+import { DAY_MS, toISO } from "./time";
+import { MONTHS } from "./format";
 
 export type DayPoint = {
   date: string; // ISO yyyy-mm-dd
@@ -7,126 +11,54 @@ export type DayPoint = {
   mrr: number;
   users: number;
   signups: number;
+  churn: number; // % of customers lost per month
+  nrr: number; // net revenue retention, %
 };
 
-function mulberry32(seed: number) {
-  return function () {
-    seed |= 0;
-    seed = (seed + 0x6d2b79f5) | 0;
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+// Day 0 of the fictional business.
+const EPOCH = Date.UTC(2024, 0, 1);
+
+const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+
+export function pointFor(dayMs: number): DayPoint {
+  const t = Math.round((dayMs - EPOCH) / DAY_MS);
+  const date = toISO(dayMs);
+  const rand = mulberry32(hashStr(date));
+  const jitter = () => rand() * 2 - 1; // -1..1
+  const d = new Date(dayMs);
+  const weekend = d.getUTCDay() === 0 || d.getUTCDay() === 6;
+
+  // ~4% month-over-month growth with a gentle wobble.
+  const mrr = Math.round(
+    33_700 * Math.exp(0.0013 * t) * (1 + 0.004 * Math.sin(t / 11) + 0.002 * jitter())
+  );
+  const users = Math.round(
+    3_530 * Math.exp(0.0009 * t) * (weekend ? 0.97 : 1) * (1 + 0.008 * jitter())
+  );
+  const signups = Math.round((6 + 6 * rand()) * (weekend ? 0.55 : 1) * (1 + t / 1500));
+  const churn = clamp(2.6 - 0.0008 * t + 0.05 * Math.sin(t / 17) + 0.03 * jitter(), 0.8, 5);
+  const nrr = clamp(103 + 0.0088 * t + 0.4 * Math.sin(t / 13) + 0.2 * jitter(), 95, 130);
+
+  return {
+    date,
+    label: `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`,
+    mrr,
+    users,
+    signups,
+    churn: Math.round(churn * 100) / 100,
+    nrr: Math.round(nrr * 10) / 10,
   };
 }
 
-const MONTHS = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-];
-
-function buildSeries(): DayPoint[] {
-  const rand = mulberry32(20260705);
-  const days = 90;
-  const points: DayPoint[] = [];
-
-  let mrr = 96000;
-  let users = 7400;
-
-  // Fixed reference "today" so the build is reproducible (no Date.now()).
-  const end = new Date(Date.UTC(2026, 6, 4)); // 2026-07-04
-
-  for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(end);
-    d.setUTCDate(end.getUTCDate() - i);
-
-    // Upward drift with weekly seasonality + noise.
-    const dow = d.getUTCDay();
-    const weekend = dow === 0 || dow === 6 ? 0.55 : 1;
-    const growth = 1 + (rand() * 0.9 + 0.35) / 100; // ~0.35–1.25% daily
-    mrr = Math.round(mrr * growth);
-    const userGrowth = 1 + (rand() * 0.5 + 0.12) / 100;
-    users = Math.round(users * userGrowth);
-    const signups = Math.round((rand() * 60 + 40) * weekend);
-
-    points.push({
-      date: d.toISOString().slice(0, 10),
-      label: `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`,
-      mrr,
-      users,
-      signups,
-    });
-  }
-
-  return points;
+/** `days` consecutive points ending on `endMs` (inclusive). */
+export function seriesEnding(endMs: number, days: number): DayPoint[] {
+  return Array.from({ length: days }, (_, i) => pointFor(endMs - (days - 1 - i) * DAY_MS));
 }
 
-export const SERIES: DayPoint[] = buildSeries();
-
-export function sliceRange(days: 7 | 30 | 90): DayPoint[] {
-  return SERIES.slice(-days);
+/** Percent change from the first to the last value. */
+export function pctChange(first: number, last: number): number {
+  return ((last - first) / first) * 100;
 }
-
-export type Kpi = {
-  key: string;
-  label: string;
-  value: number;
-  format: "currency" | "number" | "percent";
-  delta: number; // percentage points / percent change
-  direction: "up" | "down";
-  positiveIsGood: boolean;
-  spark: number[];
-};
-
-const last30 = SERIES.slice(-30);
-const SPARKS: Record<string, number[]> = {
-  mrr: last30.map((d) => d.mrr),
-  users: last30.map((d) => d.users),
-  churn: last30.map((_, i) => 2.25 - i * 0.014 + (i % 3) * 0.03),
-  nrr: last30.map((_, i) => 108 + i * 0.14 + (i % 4) * 0.05),
-};
-
-export const KPIS: Kpi[] = [
-  {
-    key: "mrr",
-    label: "Monthly Recurring Revenue",
-    value: 128400,
-    format: "currency",
-    delta: 14.2,
-    direction: "up",
-    positiveIsGood: true,
-    spark: SPARKS.mrr,
-  },
-  {
-    key: "users",
-    label: "Active Users",
-    value: 8932,
-    format: "number",
-    delta: 6.7,
-    direction: "up",
-    positiveIsGood: true,
-    spark: SPARKS.users,
-  },
-  {
-    key: "churn",
-    label: "Churn Rate",
-    value: 1.8,
-    format: "percent",
-    delta: 0.3,
-    direction: "down",
-    positiveIsGood: false,
-    spark: SPARKS.churn,
-  },
-  {
-    key: "nrr",
-    label: "Net Revenue Retention",
-    value: 112,
-    format: "percent",
-    delta: 2.1,
-    direction: "up",
-    positiveIsGood: true,
-    spark: SPARKS.nrr,
-  },
-];
 
 export type Channel = { name: string; value: number; color: string };
 

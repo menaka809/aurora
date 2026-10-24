@@ -3,10 +3,10 @@
 import { motion } from "framer-motion";
 import { useCountUp } from "@/lib/useCountUp";
 import { formatCurrency } from "@/lib/format";
-import { MRR_CURRENT, MRR_GOAL } from "@/lib/insights";
+import type { Goal } from "@/lib/data/types";
 
-export default function GoalRing() {
-  const pct = Math.min(100, (MRR_CURRENT / MRR_GOAL) * 100);
+export default function GoalRing({ goal }: { goal: Goal }) {
+  const pct = Math.min(100, (goal.current / goal.target) * 100);
   const shown = useCountUp(pct, { duration: 1600, delay: 300 });
 
   const r = 68;
@@ -55,13 +55,13 @@ export default function GoalRing() {
         <div>
           <p className="text-xs text-muted">Current</p>
           <p className="tabular font-medium text-fg">
-            {formatCurrency(MRR_CURRENT)}
+            {formatCurrency(goal.current)}
           </p>
         </div>
         <div className="text-right">
           <p className="text-xs text-muted">Target</p>
           <p className="tabular font-medium text-fg">
-            {formatCurrency(MRR_GOAL)}
+            {formatCurrency(goal.target)}
           </p>
         </div>
       </div>

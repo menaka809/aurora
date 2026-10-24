@@ -3,11 +3,12 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Moon, Sun } from "lucide-react";
 import { useUI } from "@/lib/store";
+import { useHydrated } from "@/lib/useHydrated";
 
 export default function ThemeToggle() {
   const theme = useUI((s) => s.theme);
   const toggle = useUI((s) => s.toggleTheme);
-  const hydrated = useUI((s) => s.hydrated);
+  const hydrated = useHydrated();
   const isLight = hydrated && theme === "light";
 
   return (

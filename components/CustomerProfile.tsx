@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { motion, type Variants } from "framer-motion";
 import {
@@ -13,17 +14,24 @@ import {
   LogIn,
   LifeBuoy,
   UserPlus,
+  UserMinus,
+  CalendarClock,
   type LucideIcon,
 } from "lucide-react";
 import { Card, CardHeader } from "./Card";
 import StatusBadge from "./StatusBadge";
+import ManagePlanDialog from "./ManagePlanDialog";
+import MessageSheet from "./MessageSheet";
 import {
   avatarColor,
   initials,
   type CustomerProfile as CP,
   type TimelineKind,
 } from "@/lib/customers";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { formatCurrency, formatDate, formatDaysAgo } from "@/lib/format";
+import { useUI } from "@/lib/store";
+import { useHydrated } from "@/lib/useHydrated";
+import { toast } from "@/lib/toast";
 
 const rise: Variants = {
   hidden: { opacity: 0, y: 14 },
@@ -39,20 +47,34 @@ const TL_ICON: Record<TimelineKind, { icon: LucideIcon; cls: string }> = {
   payment: { icon: CreditCard, cls: "bg-warning/12 text-warning" },
   upgrade: { icon: ArrowUpCircle, cls: "bg-success/12 text-success" },
   login: { icon: LogIn, cls: "bg-muted/15 text-muted" },
-  ticket: { icon: LifeBuoy, cls: "bg-danger/12 text-danger" },
+  ticket: { icon: LifeBuoy, cls: "bg-warning/12 text-warning" },
+  churn: { icon: UserMinus, cls: "bg-danger/12 text-danger" },
 };
 
-export default function CustomerProfile({ c }: { c: CP }) {
+export default function CustomerProfile({ c, today }: { c: CP; today: string }) {
+  const [planOpen, setPlanOpen] = useState(false);
+  const [messageOpen, setMessageOpen] = useState(false);
+  const hydrated = useHydrated();
+  const storedChange = useUI((s) => s.planChanges[c.id]);
+  const cancelPlanChange = useUI((s) => s.cancelPlanChange);
+  // Saved in localStorage, so only read it after hydration.
+  const planChange = hydrated ? storedChange : undefined;
+
   const stats = [
     { label: "Monthly revenue", value: c.mrr ? formatCurrency(c.mrr) : "—" },
     { label: "Lifetime value", value: formatCurrency(c.ltv) },
     { label: "Seats", value: String(c.seats) },
     { label: "Tenure", value: `${c.tenureMonths} mo` },
-    {
-      label: "Last seen",
-      value: c.lastLoginDays === 0 ? "Today" : `${c.lastLoginDays}d ago`,
-    },
+    { label: "Last seen", value: formatDaysAgo(c.lastLoginDays) },
   ];
+
+  const undoPlanChange = () => {
+    cancelPlanChange(c.id);
+    toast("Plan change cancelled", {
+      description: `${c.name} stays on ${c.plan}.`,
+      type: "info",
+    });
+  };
 
   return (
     <motion.div
@@ -93,14 +115,41 @@ export default function CustomerProfile({ c }: { c: CP }) {
               </div>
             </div>
             <div className="flex gap-2">
-              <button className="rounded-lg border border-border px-4 py-2 text-sm text-fg transition-colors hover:bg-elevated">
+              <button
+                onClick={() => setMessageOpen(true)}
+                className="rounded-lg border border-border px-4 py-2 text-sm text-fg transition-colors hover:bg-elevated"
+              >
                 Message
               </button>
-              <button className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90">
-                Manage plan
+              <button
+                onClick={() => setPlanOpen(true)}
+                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+              >
+                {c.status === "churned" ? "Reactivate" : "Manage plan"}
               </button>
             </div>
           </div>
+
+          {planChange && (
+            <div className="mt-5 flex flex-col gap-3 rounded-lg border border-primary/30 bg-primary/10 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+              <p className="flex items-center gap-2 text-fg">
+                <CalendarClock className="h-4 w-4 shrink-0 text-primary" />
+                <span>
+                  Moving from <strong className="font-medium">{c.plan}</strong> to{" "}
+                  <strong className="font-medium">{planChange.plan}</strong>
+                  {planChange.effective === today
+                    ? " — effective today."
+                    : ` on ${formatDate(planChange.effective)}.`}
+                </span>
+              </p>
+              <button
+                onClick={undoPlanChange}
+                className="self-start rounded-md px-2 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/10 sm:self-auto"
+              >
+                Undo
+              </button>
+            </div>
+          )}
 
           {/* Stat strip */}
           <div className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-3 lg:grid-cols-5">
@@ -252,7 +301,7 @@ export default function CustomerProfile({ c }: { c: CP }) {
               <CardHeader title="Details" />
               <dl className="space-y-4 p-5 pt-4 text-sm">
                 <Detail icon={Mail} label="Email" value={c.email} />
-                <Detail icon={Building2} label="Company" value={company(c.email)} />
+                <Detail icon={Building2} label="Company" value={c.company} />
                 <Detail icon={CreditCard} label="Plan" value={`${c.plan} · ${c.seats} seats`} />
                 <Detail icon={CalendarDays} label="Customer since" value={formatDate(c.joined)} />
                 <Detail icon={UserRound} label="Account manager" value={c.manager} />
@@ -296,6 +345,12 @@ export default function CustomerProfile({ c }: { c: CP }) {
           </motion.div>
         </div>
       </div>
+
+      {/* Mounted only while open so the selection starts fresh each time. */}
+      {planOpen && (
+        <ManagePlanDialog open onOpenChange={setPlanOpen} customer={c} today={today} />
+      )}
+      <MessageSheet open={messageOpen} onOpenChange={setMessageOpen} customer={c} />
     </motion.div>
   );
 }
@@ -332,10 +387,4 @@ function PayStatus({ status }: { status: "paid" | "refunded" | "failed" }) {
       {label}
     </span>
   );
-}
-
-function company(email: string): string {
-  const domain = email.split("@")[1] ?? "";
-  const name = domain.split(".")[0] ?? "";
-  return name.charAt(0).toUpperCase() + name.slice(1);
 }

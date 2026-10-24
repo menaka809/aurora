@@ -19,13 +19,9 @@ import {
   Printer,
   Search,
 } from "lucide-react";
-import {
-  CUSTOMERS,
-  avatarColor,
-  initials,
-  type Customer,
-} from "@/lib/customers";
-import { formatCurrency } from "@/lib/format";
+import { avatarColor, initials, type Customer } from "@/lib/customers";
+import { formatCurrency, formatDate } from "@/lib/format";
+import { daysBefore, fromISO } from "@/lib/time";
 import { downloadCSV, copyRows } from "@/lib/export";
 import { toast } from "@/lib/toast";
 import { Card } from "@/components/Card";
@@ -50,19 +46,12 @@ const SORT_LABEL: Record<SortKey, { asc: string; desc: string }> = {
   joined: { asc: "Oldest first", desc: "Newest first" },
 };
 
-const RANGES: { key: string; label: string; test: (joined: string) => boolean }[] = [
-  { key: "all", label: "All time", test: () => true },
-  { key: "2025", label: "2025", test: (j) => j.startsWith("2025") },
-  {
-    key: "h1",
-    label: "Jan–Jun 2025",
-    test: (j) => j.startsWith("2025") && Number(j.slice(5, 7)) <= 6,
-  },
-  {
-    key: "h2",
-    label: "Jul–Dec 2025",
-    test: (j) => j.startsWith("2025") && Number(j.slice(5, 7)) >= 7,
-  },
+/** Joined-date filters, as a maximum age in days (null = no limit). */
+const RANGES: { key: string; label: string; maxDays: number | null }[] = [
+  { key: "all", label: "All time", maxDays: null },
+  { key: "30d", label: "Last 30 days", maxDays: 30 },
+  { key: "90d", label: "Last 90 days", maxDays: 90 },
+  { key: "12m", label: "Last 12 months", maxDays: 365 },
 ];
 
 type SortKey = "name" | "plan" | "mrr" | "status" | "joined" | "seats";
@@ -76,8 +65,9 @@ const COLS: {
 }[] = [
   { key: "name", label: "Customer", width: "" },
   { key: "plan", label: "Plan", width: "w-[14%]", hide: "hidden sm:table-cell" },
-  { key: "mrr", label: "MRR", width: "w-[13%]" },
-  { key: "status", label: "Status", width: "w-[15%]" },
+  // No fixed width on phones: the three visible columns share the row evenly.
+  { key: "mrr", label: "MRR", width: "sm:w-[13%]" },
+  { key: "status", label: "Status", width: "sm:w-[15%]" },
   { key: "joined", label: "Joined", width: "w-[16%]", hide: "hidden lg:table-cell" },
   { key: "seats", label: "Seats", width: "w-[9%]", hide: "hidden md:table-cell" },
 ];
@@ -91,7 +81,14 @@ const rowV: Variants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] } },
 };
 
-export default function CustomersTable() {
+export default function CustomersTable({
+  customers,
+  today,
+}: {
+  customers: Customer[];
+  /** Reference date (ISO) the joined-date filters count back from. */
+  today: string;
+}) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [rangeKey, setRangeKey] = useState("all");
@@ -105,11 +102,15 @@ export default function CustomersTable() {
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const filtered = CUSTOMERS.filter((c) => {
-      if (!range.test(c.joined)) return false;
+    const todayMs = fromISO(today);
+    const filtered = customers.filter((c) => {
+      if (range.maxDays !== null && daysBefore(c.joined, todayMs) > range.maxDays)
+        return false;
       if (!q) return true;
       return (
-        c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q)
+        c.name.toLowerCase().includes(q) ||
+        c.email.toLowerCase().includes(q) ||
+        c.company.toLowerCase().includes(q)
       );
     });
 
@@ -120,7 +121,13 @@ export default function CustomersTable() {
         return (av - bv) * sort.dir;
       return String(av).localeCompare(String(bv)) * sort.dir;
     });
-  }, [query, sort, range]);
+  }, [customers, today, query, sort, range]);
+
+  const clearFilters = () => {
+    setQuery("");
+    setRangeKey("all");
+    setPage(0);
+  };
 
   const doCopy = async () => {
     if (await copyRows(rows))
@@ -160,7 +167,7 @@ export default function CustomersTable() {
               setQuery(e.target.value);
               setPage(0);
             }}
-            placeholder="Search customers…"
+            placeholder="Search name, email or company…"
             className="w-full bg-transparent text-sm text-fg outline-none placeholder:text-muted"
           />
         </div>
@@ -272,7 +279,7 @@ export default function CustomersTable() {
                 return (
                   <th
                     key={col.key}
-                    className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted ${col.width} ${col.hide ?? ""}`}
+                    className={`px-3 py-3 text-left text-xs sm:px-4 font-medium uppercase tracking-wide text-muted ${col.width} ${col.hide ?? ""}`}
                   >
                     <button
                       onClick={() => toggleSort(col.key)}
@@ -298,7 +305,7 @@ export default function CustomersTable() {
           </thead>
 
           <motion.tbody
-            key={`${sort.key}-${sort.dir}-${current}-${query}`}
+            key={`${sort.key}-${sort.dir}-${current}-${query}-${rangeKey}`}
             variants={container}
             initial="hidden"
             animate="show"
@@ -310,6 +317,25 @@ export default function CustomersTable() {
                 onOpen={() => router.push(`/customers/${c.id}`)}
               />
             ))}
+            {pageRows.length === 0 && (
+              <tr>
+                <td colSpan={COLS.length} className="px-5 py-14 text-center">
+                  <Search className="mx-auto h-6 w-6 text-muted/50" />
+                  <p className="mt-3 text-sm text-fg">No customers match these filters</p>
+                  <p className="mt-1 text-xs text-muted">
+                    {query
+                      ? `Nothing found for “${query}” in ${range.label.toLowerCase()}.`
+                      : `No customers joined in ${range.label.toLowerCase()}.`}
+                  </p>
+                  <button
+                    onClick={clearFilters}
+                    className="mt-4 rounded-lg border border-border px-3 py-1.5 text-sm text-fg transition-colors hover:bg-elevated"
+                  >
+                    Clear filters
+                  </button>
+                </td>
+              </tr>
+            )}
           </motion.tbody>
         </table>
 
@@ -353,7 +379,7 @@ function Row({ c, onOpen }: { c: Customer; onOpen: () => void }) {
       }}
       className="cursor-pointer border-b border-border text-sm outline-none transition-colors last:border-0 hover:bg-elevated focus-visible:bg-elevated"
     >
-      <td className="px-4 py-3">
+      <td className="px-3 py-3 sm:px-4">
         <div className="flex min-w-0 items-center gap-3">
           <span
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white"
@@ -363,21 +389,21 @@ function Row({ c, onOpen }: { c: Customer; onOpen: () => void }) {
           </span>
           <div className="min-w-0">
             <p className="truncate text-fg">{c.name}</p>
-            <p className="truncate text-xs text-muted">{c.email}</p>
+            <p className="truncate text-xs text-muted">{c.company}</p>
           </div>
         </div>
       </td>
-      <td className="hidden px-4 py-3 text-muted sm:table-cell">{c.plan}</td>
-      <td className="tabular px-4 py-3 font-medium text-fg">
+      <td className="hidden px-3 py-3 sm:px-4 text-muted sm:table-cell">{c.plan}</td>
+      <td className="tabular px-3 py-3 sm:px-4 font-medium text-fg">
         {c.mrr ? formatCurrency(c.mrr) : "—"}
       </td>
-      <td className="px-4 py-3">
+      <td className="px-3 py-3 sm:px-4">
         <StatusBadge status={c.status} />
       </td>
-      <td className="tabular hidden px-4 py-3 text-muted lg:table-cell">
-        {c.joined}
+      <td className="tabular hidden px-3 py-3 sm:px-4 text-muted lg:table-cell">
+        {formatDate(c.joined)}
       </td>
-      <td className="tabular hidden px-4 py-3 text-muted md:table-cell">
+      <td className="tabular hidden px-3 py-3 sm:px-4 text-muted md:table-cell">
         {c.seats}
       </td>
     </motion.tr>
