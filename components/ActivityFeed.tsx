@@ -1,14 +1,5 @@
-"use client";
-
 import Link from "next/link";
-import { motion, type Variants } from "framer-motion";
-import {
-  UserPlus,
-  ArrowUpCircle,
-  CreditCard,
-  UserMinus,
-  AlertTriangle,
-} from "lucide-react";
+import { UserPlus, ArrowUpCircle, CreditCard, UserMinus, AlertTriangle } from "lucide-react";
 import { formatDaysAgo } from "@/lib/format";
 import type { ActivityItem, ActivityKind } from "@/lib/data/types";
 
@@ -20,15 +11,7 @@ const ICON: Record<ActivityKind, { icon: typeof UserPlus; cls: string }> = {
   churn: { icon: UserMinus, cls: "bg-danger/12 text-danger" },
 };
 
-const list: Variants = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.06, delayChildren: 0.2 } },
-};
-const row: Variants = {
-  hidden: { opacity: 0, x: -10 },
-  show: { opacity: 1, x: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } },
-};
-
+/** Latest account events. Server-rendered; rows slide in with a CSS stagger. */
 export default function ActivityFeed({ items }: { items: ActivityItem[] }) {
   if (items.length === 0) {
     return (
@@ -39,18 +22,16 @@ export default function ActivityFeed({ items }: { items: ActivityItem[] }) {
   }
 
   return (
-    <motion.ul variants={list} initial="hidden" animate="show" className="px-2 pb-2">
-      {items.map((a) => {
+    <ul className="px-2 pb-2">
+      {items.map((a, i) => {
         const { icon: Icon, cls } = ICON[a.kind];
         return (
-          <motion.li key={a.id} variants={row}>
+          <li key={a.id} className="rise" style={{ animationDelay: `${200 + i * 50}ms` }}>
             <Link
               href={`/customers/${a.customerId}`}
-              className="flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-elevated"
+              className="flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-fg/5"
             >
-              <span
-                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${cls}`}
-              >
+              <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${cls}`}>
                 <Icon className="h-4 w-4" />
               </span>
               <p className="min-w-0 flex-1 truncate text-sm text-muted-foreground">
@@ -61,9 +42,9 @@ export default function ActivityFeed({ items }: { items: ActivityItem[] }) {
                 {formatDaysAgo(a.daysAgo)}
               </span>
             </Link>
-          </motion.li>
+          </li>
         );
       })}
-    </motion.ul>
+    </ul>
   );
 }

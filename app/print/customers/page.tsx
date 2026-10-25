@@ -13,7 +13,7 @@ import { HEALTH_LABEL, STATUS_LABEL, avatarColor, initials, type Status } from "
 import { formatCurrency, formatDate, formatDaysAgo, formatNumber } from "@/lib/format";
 
 export const metadata: Metadata = {
-  title: "Customer report — Aurora",
+  title: "Customer report",
   robots: { index: false },
 };
 

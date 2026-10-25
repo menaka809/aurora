@@ -2,42 +2,41 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "framer-motion";
-import { useHydrated } from "./useHydrated";
 
 const easeOutExpo = (t: number) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t));
 
 /**
- * Animates a number from 0 → target over `duration`ms using requestAnimationFrame
- * with an ease-out. Respects reduced motion (shows the target straight away).
+ * Shows `target` straight away (so the server HTML has the real number) and,
+ * when it later changes — e.g. switching 7D → 90D — counts from the old value
+ * to the new one with an ease-out. Reduced motion skips the animation.
  */
 export function useCountUp(
   target: number,
-  { duration = 1400, delay = 0 }: { duration?: number; delay?: number } = {}
+  { duration = 900, delay = 0 }: { duration?: number; delay?: number } = {}
 ): number {
-  const [value, setValue] = useState(0);
-  const frame = useRef<number>(0);
-  const hydrated = useHydrated();
-  const prefersReduced = useReducedMotion();
-  const reduce = hydrated && Boolean(prefersReduced);
+  const [value, setValue] = useState(target);
+  const previous = useRef(target);
+  const frame = useRef(0);
+  const reduce = Boolean(useReducedMotion());
 
   useEffect(() => {
-    if (reduce) return;
+    const from = previous.current;
+    previous.current = target;
+    if (reduce || from === target) return;
 
     let startTime: number | null = null;
-
     const tick = (now: number) => {
       if (startTime === null) startTime = now;
       const t = Math.min(1, (now - startTime) / duration);
-      setValue(target * easeOutExpo(t));
+      setValue(from + (target - from) * easeOutExpo(t));
       if (t < 1) frame.current = requestAnimationFrame(tick);
     };
-
-    const delayTimer = window.setTimeout(() => {
+    const timer = window.setTimeout(() => {
       frame.current = requestAnimationFrame(tick);
     }, delay);
 
     return () => {
-      window.clearTimeout(delayTimer);
+      window.clearTimeout(timer);
       cancelAnimationFrame(frame.current);
     };
   }, [target, duration, delay, reduce]);

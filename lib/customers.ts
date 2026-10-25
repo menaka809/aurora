@@ -166,7 +166,8 @@ export function buildCustomers(todayMs: number, targetMrr: number, count = 120):
 
 /** Deterministic avatar colour from a name. */
 export function avatarColor(name: string): string {
-  const palette = ["#5B8DEF", "#3FD68C", "#F5A623", "#8B5BEF", "#F2555A", "#37C0C4"];
+  // Deep enough that white initials pass WCAG AA (each ≥ 4.95:1).
+  const palette = ["#3a6ad0", "#0c8051", "#9e630b", "#7c4ddb", "#c9363d", "#0e7c86"];
   return palette[hashStr(name) % palette.length];
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { useReducedMotion } from "framer-motion";
 import ChartTooltip from "./ChartTooltip";
 import { formatNumber } from "@/lib/format";
 import type { Channel } from "@/lib/data/types";
@@ -12,6 +13,8 @@ export default function ChannelDonut({
   channels: Channel[];
   signups: number;
 }) {
+  // Honour the OS "reduce motion" setting (Recharts animates outside CSS).
+  const animate = !useReducedMotion();
   return (
     <div className="flex flex-col items-center gap-6 sm:flex-row">
       <div className="relative h-[180px] w-[180px] shrink-0">
@@ -26,6 +29,7 @@ export default function ChannelDonut({
               outerRadius={82}
               paddingAngle={3}
               stroke="none"
+              isAnimationActive={animate}
               animationDuration={1200}
               animationBegin={400}
               animationEasing="ease-out"

@@ -179,10 +179,10 @@ export async function getFunnel(range: Range): Promise<FunnelStage[]> {
 }
 
 const PLAN_COLOR: Record<string, string> = {
-  Starter: "#6B6F7B",
-  Growth: "#5B8DEF",
-  Scale: "#3FD68C",
-  Enterprise: "#8B5BEF",
+  Starter: "var(--chart-5)",
+  Growth: "var(--chart-1)",
+  Scale: "var(--chart-2)",
+  Enterprise: "var(--chart-4)",
 };
 
 export async function getPlanBreakdown(): Promise<PlanSlice[]> {

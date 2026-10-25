@@ -29,7 +29,7 @@ export default function DashboardError({
         </p>
         <button
           onClick={reset}
-          className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+          className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-primary-solid px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
         >
           <RotateCcw className="h-4 w-4" />
           Try again

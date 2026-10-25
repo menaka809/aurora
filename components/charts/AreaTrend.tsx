@@ -9,7 +9,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useReducedMotion } from "framer-motion";
 import ChartTooltip from "./ChartTooltip";
+import { formatCurrency, formatNumber } from "@/lib/format";
 
 /** Keys of T whose values are numbers (what an area can plot). */
 type NumericKey<T> = { [K in keyof T]: T[K] extends number ? K : never }[keyof T] & string;
@@ -19,8 +21,7 @@ export default function AreaTrend<T extends { label: string }>({
   dataKey,
   name,
   color,
-  formatter,
-  compact,
+  format,
   height = 260,
   animationBegin = 300,
   animationDuration = 1500,
@@ -30,12 +31,17 @@ export default function AreaTrend<T extends { label: string }>({
   dataKey: NumericKey<T>;
   name: string;
   color: string;
-  formatter: (v: number) => string;
-  compact: (v: number) => string;
+  /** How values are shown (a key, not a function, so server components can pass it). */
+  format: "currency" | "number";
   height?: number;
   animationBegin?: number;
   animationDuration?: number;
 }) {
+  const formatter = (v: number) => (format === "currency" ? formatCurrency(v) : formatNumber(v));
+  const compact = (v: number) =>
+    format === "currency" ? formatCurrency(v, true) : formatNumber(v, true);
+  // Honour the OS "reduce motion" setting (Recharts animates outside CSS).
+  const animate = !useReducedMotion();
   const gid = `area-${dataKey}`;
   const interval = Math.max(0, Math.floor(data.length / 6) - 1);
   // Font size is passed to Recharts too, so its label-overlap maths matches the CSS.
@@ -47,8 +53,8 @@ export default function AreaTrend<T extends { label: string }>({
         <AreaChart data={data} margin={{ top: 8, right: 12, left: 4, bottom: 0 }}>
           <defs>
             <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity={0.28} />
-              <stop offset="100%" stopColor={color} stopOpacity={0} />
+              <stop offset="0%" style={{ stopColor: color, stopOpacity: 0.28 }} />
+              <stop offset="100%" style={{ stopColor: color, stopOpacity: 0 }} />
             </linearGradient>
           </defs>
           <CartesianGrid vertical={false} strokeDasharray="3 3" />
@@ -88,6 +94,7 @@ export default function AreaTrend<T extends { label: string }>({
             fill={`url(#${gid})`}
             dot={false}
             activeDot={{ r: 4, strokeWidth: 0 }}
+            isAnimationActive={animate}
             animationDuration={animationDuration}
             animationBegin={animationBegin}
             animationEasing="ease-out"
