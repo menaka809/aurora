@@ -10,6 +10,8 @@ import ManagePlanDialog from "@/components/ManagePlanDialog";
 import MessageSheet from "@/components/MessageSheet";
 import { avatarColor, initials, type CustomerProfile } from "@/lib/customers";
 import { formatCurrency, formatDate, formatDaysAgo } from "@/lib/format";
+import { formatNoteTime, useNotes } from "@/lib/notes-store";
+import { useHydrated } from "@/lib/useHydrated";
 import type { TableRow } from "./columns";
 
 type Basics = Pick<
@@ -37,6 +39,21 @@ export default function QuickView({
   const [planOpen, setPlanOpen] = useState(false);
   const [messageOpen, setMessageOpen] = useState(false);
   const c: Basics | null = profile ?? row;
+
+  // Your newest note wins over the seeded one (browser-saved, so after hydration).
+  const hydrated = useHydrated();
+  const myNote = useNotes((s) => (c ? s.notes[c.id]?.[0] : undefined));
+  const latestNote =
+    hydrated && myNote
+      ? { text: myNote.text, author: myNote.author, when: formatNoteTime(myNote.createdAt), mine: true }
+      : profile?.notes[0]
+      ? {
+          text: profile.notes[0].text,
+          author: profile.notes[0].author,
+          when: formatDate(profile.notes[0].date),
+          mine: false,
+        }
+      : null;
 
   return (
     <Modal
@@ -126,15 +143,26 @@ export default function QuickView({
             )}
           </section>
 
-          {profile?.notes[0] && (
+          {latestNote && (
             <section>
               <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Latest note
               </h3>
-              <div className="rounded-lg border border-border bg-surface p-3">
-                <p className="text-sm text-fg">{profile.notes[0].text}</p>
+              <div
+                className={`rounded-lg border p-3 ${
+                  latestNote.mine ? "border-primary/25 bg-primary/5" : "border-border bg-surface"
+                }`}
+              >
+                <p className="line-clamp-4 whitespace-pre-wrap wrap-break-word text-sm text-fg">
+                  {latestNote.text}
+                </p>
                 <p className="mt-2 text-xs text-muted-foreground">
-                  {profile.notes[0].author} · {formatDate(profile.notes[0].date)}
+                  {latestNote.mine && (
+                    <span className="mr-1.5 rounded bg-primary/15 px-1.5 py-px text-[10px] font-medium uppercase tracking-wide text-primary">
+                      You
+                    </span>
+                  )}
+                  {latestNote.author} · {latestNote.when}
                 </p>
               </div>
             </section>

@@ -22,6 +22,7 @@ import { Card, CardHeader } from "./Card";
 import StatusBadge from "./StatusBadge";
 import ManagePlanDialog from "./ManagePlanDialog";
 import MessageSheet from "./MessageSheet";
+import NotesCard from "./NotesCard";
 import {
   avatarColor,
   initials,
@@ -326,22 +327,7 @@ export default function CustomerProfile({ c, today }: { c: CP; today: string }) 
           </motion.div>
 
           <motion.div variants={rise}>
-            <Card>
-              <CardHeader title="Notes" subtitle="Internal · not visible to customer" />
-              <div className="space-y-3 p-5 pt-4">
-                {c.notes.map((n) => (
-                  <div
-                    key={n.id}
-                    className="rounded-lg border border-border bg-elevated p-3"
-                  >
-                    <p className="text-sm text-fg">{n.text}</p>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      {n.author} · {formatDate(n.date)}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </Card>
+            <NotesCard customerId={c.id} seeded={c.notes} />
           </motion.div>
         </div>
       </div>
