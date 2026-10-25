@@ -54,6 +54,7 @@ export default function RangeBar({
       </p>
       <Segmented
         idBase="reporting-range"
+        label="Reporting period"
         value={String(range)}
         onChange={(v) => onChange(Number(v) as Range)}
         options={RANGES.map((r) => ({ label: `${r}D`, value: String(r) }))}

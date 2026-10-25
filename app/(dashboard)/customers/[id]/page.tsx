@@ -15,7 +15,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const c = await getCustomer(id);
-  return { title: c ? `${c.name} — Aurora` : "Customer not found — Aurora" };
+  return { title: c ? `${c.name} · ${c.company}` : "Customer not found" };
 }
 
 export default async function CustomerDetailPage({

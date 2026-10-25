@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 // Loading placeholders that mirror each page's real layout, so content slots
 // in without the page jumping. Used by the routes' loading.tsx files.
 
-function CardShell({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function CardShell({ children, className = "" }: { children?: React.ReactNode; className?: string }) {
   return (
     <div
       aria-hidden
@@ -200,19 +200,39 @@ export function ProfileSkeleton() {
 
 export function SettingsSkeleton() {
   return (
-    <div className="mx-auto max-w-[900px] space-y-4">
+    <div className="mx-auto max-w-[1400px] lg:grid lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-8">
       <Loading label="settings" />
-      <CardShell className="space-y-5 p-5">
-        <CardHeaderSkeleton />
-        <div className="grid gap-5 px-0 sm:grid-cols-2">
-          {[0, 1, 2, 3, 4].map((i) => (
-            <div key={i} className="space-y-2">
-              <Skeleton className="h-3 w-20" />
-              <Skeleton className="h-10 w-full" />
+      <div aria-hidden className="mb-4 flex gap-1 lg:mb-0 lg:flex-col">
+        {[0, 1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-9 w-28 lg:w-full" />
+        ))}
+      </div>
+      <div className="space-y-4 md:space-y-5">
+        <CardShell>
+          <div className="space-y-2 border-b border-border px-5 py-4 sm:px-6">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-3 w-64" />
+          </div>
+          <div className="px-5 py-5 sm:px-6">
+            <div className="mb-6 flex items-center gap-4">
+              <Skeleton className="size-14 rounded-full" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3 w-44" />
+              </div>
             </div>
-          ))}
-        </div>
-      </CardShell>
+            <div className="grid gap-5 sm:grid-cols-2">
+              {[0, 1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </CardShell>
+        <CardShell className="h-72" />
+      </div>
     </div>
   );
 }

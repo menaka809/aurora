@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import SettingsForm from "@/components/SettingsForm";
+import SettingsView from "@/components/settings/SettingsView";
 
-export const metadata: Metadata = { title: "Settings — Aurora" };
+export const metadata: Metadata = { title: "Settings" };
 
 export default function SettingsPage() {
-  return <SettingsForm />;
+  return <SettingsView />;
 }

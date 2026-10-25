@@ -1,17 +1,9 @@
-"use client";
-
-import { motion, type Variants } from "framer-motion";
 import { ArrowUpRight, ArrowDownRight } from "lucide-react";
-import { useCountUp } from "@/lib/useCountUp";
-import { formatValue } from "@/lib/format";
+import CountUp from "./CountUp";
 import Sparkline from "./charts/Sparkline";
 import type { Kpi } from "@/lib/data/types";
 
-const item: Variants = {
-  hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
-};
-
+/** Headline metric card. Server-rendered; only the number is a client island. */
 export default function KpiCard({
   kpi,
   index,
@@ -22,17 +14,17 @@ export default function KpiCard({
   /** Comparison period in days, shown as "vs previous N days". */
   range: number;
 }) {
-  const value = useCountUp(kpi.value, { duration: 1500, delay: 250 + index * 90 });
   const isUp = kpi.direction === "up";
   const good = isUp === kpi.positiveIsGood;
 
   return (
-    <motion.div
-      variants={item}
-      className="glass theme-tint relative overflow-hidden rounded-xl border border-border p-5"
+    <div
+      className="rise glass theme-tint relative overflow-hidden rounded-xl border border-border p-5"
+      style={{ animationDelay: `${index * 70}ms` }}
     >
       {/* faint gradient wash under the glass */}
       <div
+        aria-hidden
         className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full opacity-40 blur-2xl"
         style={{
           background: good
@@ -49,26 +41,22 @@ export default function KpiCard({
             good ? "bg-success/10 text-success" : "bg-danger/10 text-danger"
           }`}
         >
-          {isUp ? (
-            <ArrowUpRight className="h-3 w-3" />
-          ) : (
-            <ArrowDownRight className="h-3 w-3" />
-          )}
+          {isUp ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
           {kpi.delta}
           {kpi.deltaUnit === "%" ? "%" : " pts"}
         </span>
       </div>
 
       <div className="relative mt-3 tabular text-3xl font-semibold tracking-tight text-fg">
-        {formatValue(value, kpi.format)}
+        <CountUp value={kpi.value} format={kpi.format} delay={index * 60} />
       </div>
       <p className="relative mt-1 text-[11px] text-muted-foreground">vs previous {range} days</p>
 
       <Sparkline
         data={kpi.spark}
-        color={good ? "#3FD68C" : "#5B8DEF"}
+        color={good ? "var(--chart-2)" : "var(--chart-1)"}
         className="mt-4 h-8 w-full"
       />
-    </motion.div>
+    </div>
   );
 }

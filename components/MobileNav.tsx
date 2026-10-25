@@ -17,6 +17,7 @@ export default function MobileNav() {
           <Link
             key={item.href}
             href={item.href}
+            aria-current={active ? "page" : undefined}
             className={`relative flex flex-1 flex-col items-center gap-1 py-3 text-[11px] transition-colors ${
               active ? "text-primary" : "text-muted-foreground"
             }`}

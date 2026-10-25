@@ -102,7 +102,7 @@ export default function ManagePlanDialog({
           type="button"
           onClick={confirm}
           disabled={unchanged}
-          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+          className="rounded-lg bg-primary-solid px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-40"
         >
           {reactivating ? "Reactivate" : "Confirm change"}
         </button>

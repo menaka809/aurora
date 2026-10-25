@@ -12,7 +12,13 @@
   --color-elevated: var(--elevated);
   --color-fg: var(--fg);
   --color-primary: var(--primary);
+  --color-primary-solid: var(--primary-solid);
   --color-primary-soft: var(--primary-soft);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
@@ -54,13 +60,22 @@
   --surface: #14161f;
   --elevated: #191c26;
   --fg: #edeef2;
-  --muted: #6b6f7b;
+  /* ≥ 4.99:1 on bg, surface and elevated (WCAG AA for small text) */
+  --muted: #878b97;
   --primary: #5b8def;
+  /* Filled buttons: white text needs a darker blue (5.06:1) */
+  --primary-solid: #3a6ad0;
   --primary-soft: #2a3350;
   --success: #3fd68c;
   --warning: #f5a623;
   --danger: #f2555a;
   --border: #22252f;
+  /* Chart series, tuned per theme */
+  --chart-1: #5b8def;
+  --chart-2: #3fd68c;
+  --chart-3: #f5a623;
+  --chart-4: #8b5bef;
+  --chart-5: #878b97;
   --glass-rgb: 20 22 31;
   --grid: rgba(255, 255, 255, 0.04);
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
@@ -78,13 +93,21 @@
   --surface: #ffffff;
   --elevated: #ffffff;
   --fg: #14161f;
-  --muted: #71757f;
-  --primary: #3f74dd;
+  /* ≥ 5.05:1 on bg and surface */
+  --muted: #666a74;
+  --primary: #3a6ad0;
+  --primary-solid: #3a6ad0;
   --primary-soft: #e6edfc;
-  --success: #12a56b;
-  --warning: #c67f12;
-  --danger: #d8434a;
+  /* Status text colours, each ≥ 4.6:1 on white */
+  --success: #0c8051;
+  --warning: #9e630b;
+  --danger: #c9363d;
   --border: #e6e8ee;
+  --chart-1: #3a6ad0;
+  --chart-2: #12a56b;
+  --chart-3: #d18a14;
+  --chart-4: #7c4ddb;
+  --chart-5: #8a8f99;
   --glass-rgb: 255 255 255;
   --grid: rgba(0, 0, 0, 0.05);
   --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04),
@@ -104,12 +127,18 @@
 body {
   background-color: var(--bg);
   background-image: var(--app-glow);
-  background-attachment: fixed;
+  background-repeat: no-repeat;
   color: var(--fg);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.5s ease, color 0.5s ease;
+}
+/* A fixed background repaints on every scroll; keep it for larger screens. */
+@media (min-width: 768px) {
+  body {
+    background-attachment: fixed;
+  }
 }
 
 /* Soft elevation for flat surface cards */
@@ -123,11 +152,17 @@ body {
     color 0.5s ease;
 }
 
-/* Frosted glass — reserved for the top KPI cards only */
+/* Frosted glass — reserved for the top KPI cards only. On phones it falls
+   back to a solid surface: live blur is expensive to paint on low-end devices. */
 .glass {
-  background: rgba(var(--glass-rgb) / 0.6);
-  backdrop-filter: blur(18px) saturate(140%);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  background: var(--surface);
+}
+@media (min-width: 768px) {
+  .glass {
+    background: rgba(var(--glass-rgb) / 0.6);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+  }
 }
 
 .tabular {
@@ -179,6 +214,18 @@ body {
 }
 .recharts-tooltip-wrapper {
   outline: none;
+}
+
+/* Entrance: a short upward slide. Transform only (no fade), so content is
+   visible — and counted for LCP — from the first paint. Stagger with an
+   inline animation-delay. Disabled by the reduced-motion rule below. */
+@keyframes rise {
+  from {
+    transform: translateY(14px);
+  }
+}
+.rise {
+  animation: rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Indeterminate progress bar shown while the table reloads */

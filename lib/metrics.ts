@@ -63,8 +63,8 @@ export function pctChange(first: number, last: number): number {
 export type Channel = { name: string; value: number; color: string };
 
 export const CHANNELS: Channel[] = [
-  { name: "Organic", value: 42, color: "#5B8DEF" },
-  { name: "Referral", value: 26, color: "#3FD68C" },
-  { name: "Paid", value: 20, color: "#F5A623" },
-  { name: "Direct", value: 12, color: "#8B5BEF" },
+  { name: "Organic", value: 42, color: "var(--chart-1)" },
+  { name: "Referral", value: 26, color: "var(--chart-2)" },
+  { name: "Paid", value: 20, color: "var(--chart-3)" },
+  { name: "Direct", value: 12, color: "var(--chart-4)" },
 ];

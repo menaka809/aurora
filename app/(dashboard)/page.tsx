@@ -4,7 +4,7 @@ import OverviewView from "@/components/views/OverviewView";
 import { getAcquisition, getActivity, getGoal, getKpis, getSeries } from "@/lib/data";
 import { RANGE_COOKIE, resolveRange } from "@/lib/range";
 
-export const metadata: Metadata = { title: "Overview — Aurora" };
+export const metadata: Metadata = { title: "Overview" };
 
 export default async function Overview({
   searchParams,

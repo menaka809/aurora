@@ -1,9 +1,7 @@
-"use client";
-
-import { motion } from "framer-motion";
 import { formatNumber } from "@/lib/format";
 import type { FunnelStage } from "@/lib/data/types";
 
+/** Funnel bars. Server-rendered; widths animate via CSS when the period changes. */
 export default function ConversionFunnel({ stages }: { stages: FunnelStage[] }) {
   const max = stages[0].value;
 
@@ -17,25 +15,24 @@ export default function ConversionFunnel({ stages }: { stages: FunnelStage[] }) 
             <div className="mb-1.5 flex items-center justify-between text-sm">
               <span className="text-fg">{s.stage}</span>
               <span className="flex items-baseline gap-3">
-                <span className="tabular font-medium text-fg">
-                  {formatNumber(s.value)}
-                </span>
+                <span className="tabular font-medium text-fg">{formatNumber(s.value)}</span>
                 {i > 0 && (
-                  <span className="tabular w-12 text-right text-xs text-muted-foreground">
+                  <span
+                    className="tabular w-12 text-right text-xs text-muted-foreground"
+                    title={`${conv.toFixed(1)}% of ${stages[i - 1].stage.toLowerCase()}`}
+                  >
                     {conv.toFixed(1)}%
                   </span>
                 )}
               </span>
             </div>
-            <div className="h-2.5 overflow-hidden rounded-full bg-elevated">
-              <motion.div
-                initial={{ width: 0 }}
-                whileInView={{ width: `${width}%` }}
-                viewport={{ once: true }}
-                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: i * 0.1 }}
-                className="h-full rounded-full"
+            <div className="h-2.5 overflow-hidden rounded-full bg-fg/8">
+              <div
+                className="h-full rounded-full transition-[width] duration-700 ease-out"
                 style={{
-                  background: "linear-gradient(90deg, #5B8DEF, #3FD68C)",
+                  width: `${width}%`,
+                  transitionDelay: `${i * 60}ms`,
+                  background: "linear-gradient(90deg, var(--chart-1), var(--chart-2))",
                 }}
               />
             </div>

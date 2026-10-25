@@ -1,5 +1,3 @@
-"use client";
-
 /** Lightweight inline-SVG sparkline (no Recharts overhead per KPI card). */
 export default function Sparkline({
   data,
@@ -25,7 +23,8 @@ export default function Sparkline({
 
   const line = points.map(([x, y]) => `${x},${y}`).join(" ");
   const area = `0,${h} ${line} ${w},${h}`;
-  const gid = `spark-${color.replace("#", "")}`;
+  // Colours may be CSS variables, so strip anything not valid in an id.
+  const gid = `spark-${color.replace(/[^a-z0-9]/gi, "")}`;
 
   return (
     <svg
@@ -36,8 +35,8 @@ export default function Sparkline({
     >
       <defs>
         <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor={color} stopOpacity="0.22" />
-          <stop offset="1" stopColor={color} stopOpacity="0" />
+          <stop offset="0" style={{ stopColor: color, stopOpacity: 0.22 }} />
+          <stop offset="1" style={{ stopColor: color, stopOpacity: 0 }} />
         </linearGradient>
       </defs>
       <polygon points={area} fill={`url(#${gid})`} />

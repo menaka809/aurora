@@ -1,40 +1,38 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
-import { Search, CornerDownLeft, type LucideIcon } from "lucide-react";
+import { FileSpreadsheet, Moon, Printer, Sun } from "lucide-react";
+import {
+  Command,
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from "@/components/ui/command";
 import { useUI } from "@/lib/store";
+import { useResolvedTheme } from "@/lib/theme";
 import { NAV } from "@/lib/nav";
 import { initials, avatarColor } from "@/lib/customers";
 import type { CustomerIndexEntry } from "@/lib/data/types";
 
-type Result = {
-  id: string;
-  label: string;
-  hint?: string;
-  href: string;
-  icon?: LucideIcon;
-  color?: string;
-  group: "Navigate" | "Customers";
-};
+/** Customers shown before the user types anything. */
+const SUGGESTED = 5;
 
-const PAGES: Result[] = NAV.map((item) => ({
-  id: `nav-${item.href}`,
-  label: item.label,
-  hint: item.subtitle,
-  href: item.href,
-  icon: item.icon,
-  group: "Navigate",
-}));
-
-export default function CommandPalette({
-  customers,
-}: {
-  customers: CustomerIndexEntry[];
-}) {
+/**
+ * ⌘K / Ctrl+K palette on cmdk: a real combobox (announced selection,
+ * arrow keys that wrap) with fuzzy matching across pages, customers and
+ * quick actions.
+ */
+export default function CommandPalette({ customers }: { customers: CustomerIndexEntry[] }) {
   const open = useUI((s) => s.commandOpen);
   const setOpen = useUI((s) => s.setCommandOpen);
+  const toggleTheme = useUI((s) => s.toggleTheme);
+  const router = useRouter();
+  const [query, setQuery] = useState("");
 
   // Global ⌘K / Ctrl+K toggle.
   useEffect(() => {
@@ -43,165 +41,126 @@ export default function CommandPalette({
         e.preventDefault();
         setOpen(!useUI.getState().commandOpen);
       }
-      if (e.key === "Escape") setOpen(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [setOpen]);
 
-  return (
-    <AnimatePresence>
-      {open && (
-        <div className="fixed inset-0 z-[80] flex items-start justify-center px-4 pt-[12vh]">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setOpen(false)}
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-          />
-          <motion.div
-            initial={{ opacity: 0, y: -12, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -12, scale: 0.98 }}
-            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full max-w-xl overflow-hidden rounded-xl border border-border bg-elevated shadow-2xl"
-          >
-            <PaletteBody customers={customers} onClose={() => setOpen(false)} />
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
-  );
-}
-
-/** Mounted fresh on every open, so the query and selection start empty. */
-function PaletteBody({
-  customers,
-  onClose,
-}: {
-  customers: CustomerIndexEntry[];
-  onClose: () => void;
-}) {
-  const router = useRouter();
-  const [query, setQuery] = useState("");
-  const [active, setActive] = useState(0);
-
-  const results = useMemo<Result[]>(() => {
-    const q = query.trim().toLowerCase();
-    const pages = PAGES.filter((p) => p.label.toLowerCase().includes(q));
-    const matches: Result[] = customers
-      .filter(
-        (c) =>
-          !q ||
-          c.name.toLowerCase().includes(q) ||
-          c.email.toLowerCase().includes(q) ||
-          c.company.toLowerCase().includes(q)
-      )
-      .slice(0, q ? 6 : 3)
-      .map((c) => ({
-        id: c.id,
-        label: c.name,
-        hint: c.company,
-        href: `/customers/${c.id}`,
-        color: avatarColor(c.name),
-        group: "Customers",
-      }));
-    return [...pages, ...matches];
-  }, [query, customers]);
-
-  const go = (r: Result) => {
-    onClose();
-    router.push(r.href);
+  const onOpenChange = (next: boolean) => {
+    setOpen(next);
+    if (!next) setQuery("");
+  };
+  const run = (action: () => void) => {
+    onOpenChange(false);
+    action();
   };
 
-  const onKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setActive((a) => (a + 1) % results.length);
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setActive((a) => (a - 1 + results.length) % results.length);
-    } else if (e.key === "Enter") {
-      e.preventDefault();
-      if (results[active]) go(results[active]);
-    }
-  };
-
-  let idx = -1;
+  const shownCustomers = query.trim() ? customers : customers.slice(0, SUGGESTED);
+  const isLight = useResolvedTheme() === "light";
 
   return (
-    <>
-      <div className="flex items-center gap-3 border-b border-border px-4">
-        <Search className="h-4 w-4 text-muted-foreground" />
-        <input
-          autoFocus
+    <CommandDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Command palette"
+      description="Search pages, customers and actions"
+      className="max-w-xl sm:max-w-xl"
+    >
+      <Command loop className="p-1.5">
+        <CommandInput
           value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setActive(0);
-          }}
-          onKeyDown={onKeyDown}
+          onValueChange={setQuery}
           placeholder="Search pages, customers and companies…"
-          className="w-full bg-transparent py-4 text-sm text-fg outline-none placeholder:text-muted-foreground"
         />
-        <kbd className="rounded border border-border px-1.5 py-0.5 text-[10px] tabular text-muted-foreground">
-          ESC
-        </kbd>
-      </div>
-
-      <div className="max-h-[52vh] overflow-y-auto p-2">
-        {results.length === 0 && (
-          <p className="px-3 py-6 text-center text-sm text-muted-foreground">
+        <CommandList className="max-h-[min(26rem,55vh)] pt-1">
+          <CommandEmpty>
             No results for “{query}”.
-          </p>
-        )}
-        {(["Navigate", "Customers"] as const).map((group) => {
-          const items = results.filter((r) => r.group === group);
-          if (!items.length) return null;
-          return (
-            <div key={group} className="mb-1">
-              <p className="px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                {group}
-              </p>
-              {items.map((r) => {
-                idx++;
-                const isActive = idx === active;
-                const rowIdx = idx;
-                const Icon = r.icon;
-                return (
-                  <button
-                    key={r.id}
-                    onMouseEnter={() => setActive(rowIdx)}
-                    onClick={() => go(r)}
-                    className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${
-                      isActive ? "bg-surface text-fg" : "text-muted-foreground"
-                    }`}
-                  >
-                    {Icon ? (
-                      <Icon className="h-4 w-4 shrink-0" />
-                    ) : (
-                      <span
-                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white"
-                        style={{ background: r.color }}
-                      >
-                        {initials(r.label)}
-                      </span>
-                    )}
-                    <span className="truncate text-fg">{r.label}</span>
-                    {r.hint && (
-                      <span className="truncate text-xs text-muted-foreground">{r.hint}</span>
-                    )}
-                    {isActive && (
-                      <CornerDownLeft className="ml-auto h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          );
-        })}
-      </div>
-    </>
+            <span className="mt-1 block text-xs text-muted-foreground">
+              Try a customer&apos;s name, email or company.
+            </span>
+          </CommandEmpty>
+
+          <CommandGroup heading="Navigate">
+            {NAV.map((item) => {
+              const Icon = item.icon;
+              return (
+                <CommandItem
+                  key={item.href}
+                  value={`page ${item.label} ${item.subtitle}`}
+                  onSelect={() => run(() => router.push(item.href))}
+                  className="py-2"
+                >
+                  <Icon className="text-muted-foreground" />
+                  <span className="text-fg">{item.label}</span>
+                  <span className="truncate text-xs text-muted-foreground">{item.subtitle}</span>
+                </CommandItem>
+              );
+            })}
+          </CommandGroup>
+
+          <CommandGroup heading={query.trim() ? "Customers" : "Customers · top accounts"}>
+            {shownCustomers.map((c) => (
+              <CommandItem
+                key={c.id}
+                // cmdk matches against this text; the id keeps values unique.
+                value={`customer ${c.name} ${c.company} ${c.email} ${c.id}`}
+                onSelect={() => run(() => router.push(`/customers/${c.id}`))}
+                className="py-2"
+              >
+                <span
+                  className="flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white"
+                  style={{ background: avatarColor(c.name) }}
+                >
+                  {initials(c.name)}
+                </span>
+                <span className="truncate text-fg">{c.name}</span>
+                <span className="truncate text-xs text-muted-foreground">{c.company}</span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+
+          <CommandSeparator />
+          <CommandGroup heading="Actions">
+            <CommandItem
+              value="action switch theme dark light mode"
+              onSelect={() => run(toggleTheme)}
+              className="py-2"
+            >
+              {isLight ? <Moon className="text-muted-foreground" /> : <Sun className="text-muted-foreground" />}
+              Switch to {isLight ? "dark" : "light"} mode
+            </CommandItem>
+            <CommandItem
+              value="action export customers csv download"
+              onSelect={() => run(() => window.location.assign("/api/customers/export"))}
+              className="py-2"
+            >
+              <FileSpreadsheet className="text-muted-foreground" />
+              Export all customers as CSV
+            </CommandItem>
+            <CommandItem
+              value="action print customer report"
+              onSelect={() => run(() => window.open("/print/customers", "_blank"))}
+              className="py-2"
+            >
+              <Printer className="text-muted-foreground" />
+              Print customer report
+            </CommandItem>
+          </CommandGroup>
+        </CommandList>
+
+        <div className="mt-1 flex items-center gap-4 border-t border-border px-3 pt-2 pb-1 text-[11px] text-muted-foreground">
+          {[
+            ["↑↓", "navigate"],
+            ["↵", "open"],
+            ["esc", "close"],
+          ].map(([key, label]) => (
+            <span key={key} className="flex items-center gap-1.5">
+              <kbd className="tabular rounded border border-border px-1.5 py-px text-[10px]">{key}</kbd>
+              {label}
+            </span>
+          ))}
+        </div>
+      </Command>
+    </CommandDialog>
   );
 }

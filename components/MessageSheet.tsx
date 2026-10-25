@@ -95,7 +95,7 @@ export default function MessageSheet({
           <p className="text-xs text-muted-foreground">Demo workspace — no email is sent.</p>
           <button
             type="submit"
-            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+            className="flex items-center gap-2 rounded-lg bg-primary-solid px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
           >
             <Send className="h-4 w-4" />
             Send

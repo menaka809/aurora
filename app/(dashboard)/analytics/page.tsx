@@ -4,7 +4,7 @@ import AnalyticsView from "@/components/views/AnalyticsView";
 import { getFunnel, getKpis, getPlanBreakdown, getSeries } from "@/lib/data";
 import { RANGE_COOKIE, resolveRange } from "@/lib/range";
 
-export const metadata: Metadata = { title: "Analytics — Aurora" };
+export const metadata: Metadata = { title: "Analytics" };
 
 export default async function Analytics({
   searchParams,

@@ -10,7 +10,7 @@ import {
 } from "@/lib/data";
 import { loadCustomerQuery } from "@/lib/customers-query";
 
-export const metadata: Metadata = { title: "Customers — Aurora" };
+export const metadata: Metadata = { title: "Customers" };
 
 export default async function CustomersPage({
   searchParams,

@@ -86,7 +86,7 @@ export default function NotesCard({ customerId, seeded }: { customerId: string; 
             <button
               type="submit"
               disabled={!text.trim()}
-              className="rounded-md bg-primary px-3 py-1 text-xs font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+              className="rounded-md bg-primary-solid px-3 py-1 text-xs font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-40"
             >
               Save note
             </button>

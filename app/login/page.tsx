@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 
-export const metadata: Metadata = { title: "Sign in — Aurora" };
+export const metadata: Metadata = { title: "Sign in" };
 
 // Demo sign-in. Real authentication (Supabase) replaces this in Phase 4.
 export default function LoginPage() {
@@ -25,7 +25,7 @@ export default function LoginPage() {
 
         <Link
           href="/"
-          className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+          className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg bg-primary-solid px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
         >
           Continue as demo user
           <ArrowRight className="h-4 w-4" />
