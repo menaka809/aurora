@@ -25,7 +25,7 @@ const VIEW_STYLE: Record<string, { icon: LucideIcon; tone: string }> = {
   "at-risk": { icon: AlertTriangle, tone: "text-warning" },
   trials: { icon: Hourglass, tone: "text-primary" },
   "high-value": { icon: Gem, tone: "text-success" },
-  new: { icon: Sparkles, tone: "text-[#8B5BEF]" },
+  new: { icon: Sparkles, tone: "text-chart-4" },
 };
 
 function Tab({
@@ -67,7 +67,7 @@ function Tab({
       {count !== undefined && (
         <span
           className={`tabular relative min-w-6 rounded-md px-1.5 py-px text-center text-[11px] font-medium transition-colors ${
-            active ? "bg-primary text-white" : "bg-fg/5 text-muted-foreground"
+            active ? "bg-primary-solid text-white" : "bg-fg/5 text-muted-foreground"
           }`}
         >
           {count}
@@ -197,7 +197,7 @@ export default function ViewTabs({
             <button
               type="submit"
               disabled={!name.trim()}
-              className="w-full rounded-lg bg-primary px-3 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+              className="w-full rounded-lg bg-primary-solid px-3 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-40"
             >
               Save view
             </button>

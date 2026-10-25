@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Info } from "lucide-react";
+import InfoTip from "./InfoTip";
 
 /** Flat surface card — used everywhere except the glass KPI cards. */
 export function Card({
@@ -18,18 +18,6 @@ export function Card({
   );
 }
 
-/** Hover-for-definition info tooltip (pure CSS, no JS). */
-export function InfoTip({ text }: { text: string }) {
-  return (
-    <span className="group/info relative inline-flex align-middle">
-      <Info className="h-3.5 w-3.5 cursor-help text-muted-foreground/70 transition-colors hover:text-fg" />
-      <span className="pointer-events-none absolute left-1/2 top-6 z-30 w-56 -translate-x-1/2 rounded-lg border border-border bg-elevated px-3 py-2 text-xs leading-relaxed text-muted-foreground opacity-0 shadow-xl transition-opacity duration-200 group-hover/info:opacity-100">
-        {text}
-      </span>
-    </span>
-  );
-}
-
 export function CardHeader({
   title,
   subtitle,
@@ -45,10 +33,11 @@ export function CardHeader({
     <div className="flex items-start justify-between gap-4 px-5 pt-5">
       <div className="min-w-0">
         <div className="flex items-center gap-1.5">
-          <h3 className="text-[15px] font-semibold tracking-tight text-fg">
+          {/* h2: the page title in the top bar is the h1. */}
+          <h2 className="text-[15px] font-semibold tracking-tight text-fg">
             {title}
-          </h3>
-          {info && <InfoTip text={info} />}
+          </h2>
+          {info && <InfoTip label={title} text={info} />}
         </div>
         {subtitle && <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>}
       </div>

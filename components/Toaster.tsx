@@ -15,7 +15,13 @@ export default function Toaster() {
   const dismiss = useToastStore((s) => s.dismiss);
 
   return (
-    <div className="pointer-events-none fixed bottom-5 right-5 z-[90] flex w-[calc(100%-2.5rem)] max-w-sm flex-col gap-2.5 print:hidden">
+    // Announced politely by screen readers; on phones it sits above the bottom nav.
+    <div
+      role="region"
+      aria-label="Notifications"
+      aria-live="polite"
+      className="pointer-events-none fixed bottom-24 right-5 z-[90] flex w-[calc(100%-2.5rem)] max-w-sm flex-col gap-2.5 md:bottom-5 print:hidden"
+    >
       <AnimatePresence>
         {toasts.map((t) => {
           const { icon: Icon, cls } = ICON[t.type];

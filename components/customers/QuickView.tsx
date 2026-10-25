@@ -188,7 +188,7 @@ export default function QuickView({
           </button>
           <Link
             href={`/customers/${c.id}`}
-            className="ml-auto flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+            className="ml-auto flex items-center gap-1.5 rounded-lg bg-primary-solid px-3 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
           >
             Full profile
             <ArrowUpRight className="size-4" />

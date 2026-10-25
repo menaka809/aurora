@@ -35,7 +35,8 @@ import { useHydrated } from "@/lib/useHydrated";
 import { toast } from "@/lib/toast";
 
 const rise: Variants = {
-  hidden: { opacity: 0, y: 14 },
+  // Slide only (no fade) so content is visible before JavaScript loads.
+  hidden: { y: 14 },
   show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
 };
 const container: Variants = {
@@ -124,7 +125,7 @@ export default function CustomerProfile({ c, today }: { c: CP; today: string }) 
               </button>
               <button
                 onClick={() => setPlanOpen(true)}
-                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+                className="rounded-lg bg-primary-solid px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
               >
                 {c.status === "churned" ? "Reactivate" : "Manage plan"}
               </button>
@@ -176,8 +177,10 @@ export default function CustomerProfile({ c, today }: { c: CP; today: string }) 
                 title="Activity timeline"
                 subtitle="Everything this account has done"
               />
-              <ol className="relative px-5 py-5">
-                <span className="absolute bottom-8 left-[34px] top-9 w-px bg-border" />
+              {/* The connecting line sits outside the <ol>: a list may only contain <li>. */}
+              <div className="relative px-5 py-5">
+                <span aria-hidden className="absolute bottom-8 left-[34px] top-9 w-px bg-border" />
+                <ol className="relative">
                 {c.timeline.map((e) => {
                   const { icon: Icon, cls } = TL_ICON[e.kind];
                   return (
@@ -203,7 +206,8 @@ export default function CustomerProfile({ c, today }: { c: CP; today: string }) 
                     </li>
                   );
                 })}
-              </ol>
+                </ol>
+              </div>
             </Card>
           </motion.div>
 
@@ -351,12 +355,13 @@ function Detail({
   value: string;
 }) {
   return (
-    <div className="flex items-start gap-3">
-      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-      <div className="min-w-0">
-        <dt className="text-xs text-muted-foreground">{label}</dt>
-        <dd className="truncate text-fg">{value}</dd>
-      </div>
+    // A <dl> group may only hold <dt>/<dd>, so the icon lives inside the <dt>.
+    <div className="min-w-0">
+      <dt className="flex items-center gap-2 text-xs text-muted-foreground">
+        <Icon aria-hidden className="h-4 w-4 shrink-0" />
+        {label}
+      </dt>
+      <dd className="mt-0.5 truncate pl-6 text-fg">{value}</dd>
     </div>
   );
 }

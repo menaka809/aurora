@@ -24,7 +24,7 @@ export default function PrintActions() {
           </button>
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+            className="flex items-center gap-1.5 rounded-lg bg-primary-solid px-3 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
           >
             <Printer className="size-4" />
             Print
