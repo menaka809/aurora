@@ -3,28 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import {
-  LayoutDashboard,
-  LineChart,
-  Users,
-  Settings,
-  PanelLeftClose,
-  PanelLeft,
-  Sparkles,
-  type LucideIcon,
-} from "lucide-react";
+import { PanelLeftClose, PanelLeft, Sparkles } from "lucide-react";
 import { useUI } from "@/lib/store";
 import { useHydrated } from "@/lib/useHydrated";
+import { NAV, isNavActive } from "@/lib/nav";
 import UserMenu from "./UserMenu";
-
-type NavItem = { label: string; href: string; icon: LucideIcon };
-
-const NAV: NavItem[] = [
-  { label: "Overview", href: "/", icon: LayoutDashboard },
-  { label: "Analytics", href: "/analytics", icon: LineChart },
-  { label: "Customers", href: "/customers", icon: Users },
-  { label: "Settings", href: "/settings", icon: Settings },
-];
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -56,10 +39,7 @@ export default function Sidebar() {
       {/* Nav */}
       <nav className="flex flex-1 flex-col gap-1 px-3 py-4">
         {NAV.map((item) => {
-          const active =
-            item.href === "/"
-              ? pathname === "/"
-              : pathname.startsWith(item.href);
+          const active = isNavActive(item, pathname);
           const Icon = item.icon;
           return (
             <Link

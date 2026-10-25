@@ -4,26 +4,13 @@ import { usePathname } from "next/navigation";
 import { Search } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import { useUI } from "@/lib/store";
-
-const TITLES: Record<string, { title: string; sub: string }> = {
-  "/": { title: "Overview", sub: "Your growth, in motion." },
-  "/analytics": { title: "Analytics", sub: "Revenue and engagement trends." },
-  "/customers": { title: "Customers", sub: "Accounts and their health." },
-  "/settings": { title: "Settings", sub: "Manage your workspace." },
-};
+import { navItemFor } from "@/lib/nav";
 
 export default function Topbar() {
   const pathname = usePathname();
   const openCommand = useUI((s) => s.setCommandOpen);
-  const meta =
-    TITLES[pathname] ??
-    (pathname.startsWith("/analytics")
-      ? TITLES["/analytics"]
-      : pathname.startsWith("/customers")
-      ? TITLES["/customers"]
-      : pathname.startsWith("/settings")
-      ? TITLES["/settings"]
-      : TITLES["/"]);
+  const item = navItemFor(pathname);
+  const meta = { title: item.label, sub: item.subtitle };
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-border bg-bg/80 px-5 backdrop-blur-md md:px-8 print:hidden">

@@ -3,22 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import {
-  LayoutDashboard,
-  LineChart,
-  Users,
-  Settings,
-  type LucideIcon,
-} from "lucide-react";
-
-type Item = { label: string; href: string; icon: LucideIcon };
-
-const NAV: Item[] = [
-  { label: "Overview", href: "/", icon: LayoutDashboard },
-  { label: "Analytics", href: "/analytics", icon: LineChart },
-  { label: "Customers", href: "/customers", icon: Users },
-  { label: "Settings", href: "/settings", icon: Settings },
-];
+import { NAV, isNavActive } from "@/lib/nav";
 
 export default function MobileNav() {
   const pathname = usePathname();
@@ -26,8 +11,7 @@ export default function MobileNav() {
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around border-t border-border bg-surface/90 backdrop-blur-md md:hidden print:hidden">
       {NAV.map((item) => {
-        const active =
-          item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+        const active = isNavActive(item, pathname);
         const Icon = item.icon;
         return (
           <Link

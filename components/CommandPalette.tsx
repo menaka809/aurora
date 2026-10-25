@@ -3,16 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  LayoutDashboard,
-  LineChart,
-  Users,
-  Settings,
-  Search,
-  CornerDownLeft,
-  type LucideIcon,
-} from "lucide-react";
+import { Search, CornerDownLeft, type LucideIcon } from "lucide-react";
 import { useUI } from "@/lib/store";
+import { NAV } from "@/lib/nav";
 import { initials, avatarColor } from "@/lib/customers";
 import type { CustomerIndexEntry } from "@/lib/data/types";
 
@@ -26,12 +19,14 @@ type Result = {
   group: "Navigate" | "Customers";
 };
 
-const PAGES: Result[] = [
-  { id: "nav-overview", label: "Overview", href: "/", icon: LayoutDashboard, group: "Navigate" },
-  { id: "nav-analytics", label: "Analytics", href: "/analytics", icon: LineChart, group: "Navigate" },
-  { id: "nav-customers", label: "Customers", href: "/customers", icon: Users, group: "Navigate" },
-  { id: "nav-settings", label: "Settings", href: "/settings", icon: Settings, group: "Navigate" },
-];
+const PAGES: Result[] = NAV.map((item) => ({
+  id: `nav-${item.href}`,
+  label: item.label,
+  hint: item.subtitle,
+  href: item.href,
+  icon: item.icon,
+  group: "Navigate",
+}));
 
 export default function CommandPalette({
   customers,
