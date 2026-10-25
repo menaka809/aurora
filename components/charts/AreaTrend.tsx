@@ -11,7 +11,10 @@ import {
 } from "recharts";
 import ChartTooltip from "./ChartTooltip";
 
-export default function AreaTrend({
+/** Keys of T whose values are numbers (what an area can plot). */
+type NumericKey<T> = { [K in keyof T]: T[K] extends number ? K : never }[keyof T] & string;
+
+export default function AreaTrend<T extends { label: string }>({
   data,
   dataKey,
   name,
@@ -22,8 +25,9 @@ export default function AreaTrend({
   animationBegin = 300,
   animationDuration = 1500,
 }: {
-  data: Record<string, unknown>[];
-  dataKey: string;
+  /** Rows with an x-axis `label` plus the numeric series to plot. */
+  data: T[];
+  dataKey: NumericKey<T>;
   name: string;
   color: string;
   formatter: (v: number) => string;

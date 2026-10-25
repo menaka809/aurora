@@ -1,58 +1,48 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowUpRight, ArrowDownRight } from "lucide-react";
-import { pctChange } from "@/lib/metrics";
 import { formatCurrency, formatNumber } from "@/lib/format";
 import { Card, CardHeader } from "@/components/Card";
-import Segmented from "@/components/Segmented";
 import AreaTrend from "@/components/charts/AreaTrend";
 import ConversionFunnel from "@/components/ConversionFunnel";
 import PlanBreakdown from "@/components/PlanBreakdown";
-import type { DayPoint, FunnelStage, PlanSlice } from "@/lib/data/types";
+import RangeBar, { useRange } from "@/components/RangeBar";
+import DeltaBadge from "@/components/DeltaBadge";
+import type { Range } from "@/lib/range";
+import type { DayPoint, FunnelStage, Kpi, PlanSlice } from "@/lib/data/types";
 
-type Range = "7" | "30" | "90";
-
-function HeadlineStat({ value, delta }: { value: string; delta: number }) {
-  const up = delta >= 0;
+/** Big number plus its change vs the previous period. */
+function HeadlineStat({ value, kpi, range }: { value: string; kpi: Kpi; range: Range }) {
+  const up = kpi.direction === "up";
   return (
-    <div className="text-right">
+    <div className="flex flex-col items-end gap-1">
       <p className="tabular text-lg font-semibold text-fg">{value}</p>
-      <p
-        className={`flex items-center justify-end gap-0.5 text-xs font-medium ${
-          up ? "text-success" : "text-danger"
-        }`}
-      >
-        {up ? (
-          <ArrowUpRight className="h-3 w-3" />
-        ) : (
-          <ArrowDownRight className="h-3 w-3" />
-        )}
-        {Math.abs(delta).toFixed(1)}%
-      </p>
+      <DeltaBadge
+        value={kpi.delta}
+        up={up}
+        good={up === kpi.positiveIsGood}
+        title={`vs previous ${range} days`}
+      />
     </div>
   );
 }
 
 export default function AnalyticsView({
+  range: serverRange,
   series,
+  kpis,
   funnel,
   plans,
 }: {
-  /** The full 90-day history; the range control slices it. */
+  range: Range;
   series: DayPoint[];
+  kpis: Kpi[];
   funnel: FunnelStage[];
   plans: PlanSlice[];
 }) {
-  const [range, setRange] = useState<Range>("30");
-  const data = series.slice(-Number(range));
-  const rows = data as unknown as Record<string, unknown>[];
-
-  const first = data[0];
-  const last = data[data.length - 1];
-  const revDelta = pctChange(first.mrr, last.mrr);
-  const usrDelta = pctChange(first.users, last.users);
+  const { range, pending, change } = useRange(serverRange);
+  const mrr = kpis.find((k) => k.key === "mrr")!;
+  const users = kpis.find((k) => k.key === "users")!;
 
   return (
     <motion.div
@@ -61,87 +51,79 @@ export default function AnalyticsView({
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       className="mx-auto max-w-[1400px] space-y-4"
     >
-      {/* Range control (applies to the time-series charts) */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          Showing the last <span className="text-fg">{range} days</span>
-        </p>
-        <Segmented
-          idBase="analytics-range"
-          value={range}
-          onChange={setRange}
-          options={[
-            { label: "7D", value: "7" },
-            { label: "30D", value: "30" },
-            { label: "90D", value: "90" },
-          ]}
-        />
-      </div>
+      <RangeBar range={range} pending={pending} onChange={change} />
 
-      {/* Q: Is recurring revenue growing? */}
-      <Card>
-        <CardHeader
-          title="Recurring revenue"
-          subtitle="MRR over time"
-          info="MRR (Monthly Recurring Revenue) is the predictable subscription revenue billed each month, excluding one-off charges."
-          action={<HeadlineStat value={formatCurrency(last.mrr)} delta={revDelta} />}
-        />
-        <div className="px-3 pb-4 pt-6">
-          <AreaTrend
-            data={rows}
-            dataKey="mrr"
-            name="MRR"
-            color="#5B8DEF"
-            formatter={(v) => formatCurrency(v)}
-            compact={(v) => formatCurrency(v, true)}
-            height={300}
-            animationBegin={0}
-            animationDuration={800}
-          />
-        </div>
-      </Card>
-
-      {/* Q: Is the active audience growing? */}
-      <Card>
-        <CardHeader
-          title="User growth"
-          subtitle="Daily active accounts"
-          info="Active users are unique accounts with at least one session on a given day."
-          action={<HeadlineStat value={formatNumber(last.users)} delta={usrDelta} />}
-        />
-        <div className="px-3 pb-4 pt-6">
-          <AreaTrend
-            data={rows}
-            dataKey="users"
-            name="Active users"
-            color="#3FD68C"
-            formatter={(v) => formatNumber(v)}
-            compact={(v) => formatNumber(v, true)}
-            height={260}
-            animationBegin={0}
-            animationDuration={800}
-          />
-        </div>
-      </Card>
-
-      {/* Q: Where do we lose people / which plans pay? */}
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div
+        aria-busy={pending}
+        className={`space-y-4 transition-opacity ${pending ? "opacity-60" : ""}`}
+      >
+        {/* Q: Is recurring revenue growing? */}
         <Card>
           <CardHeader
-            title="Conversion funnel"
-            subtitle="Where visitors drop off before paying · last 30 days"
-            info="Each stage's percentage is its conversion from the stage directly above it."
+            title="Recurring revenue"
+            subtitle={`MRR over time · last ${serverRange} days`}
+            info="MRR (Monthly Recurring Revenue) is the predictable subscription revenue billed each month, excluding one-off charges."
+            action={<HeadlineStat value={formatCurrency(mrr.value)} kpi={mrr} range={serverRange} />}
           />
-          <ConversionFunnel stages={funnel} />
+          <div className="px-3 pb-4 pt-6">
+            <AreaTrend
+              data={series}
+              dataKey="mrr"
+              name="MRR"
+              color="#5B8DEF"
+              formatter={(v) => formatCurrency(v)}
+              compact={(v) => formatCurrency(v, true)}
+              height={300}
+              animationBegin={0}
+              animationDuration={800}
+            />
+          </div>
         </Card>
+
+        {/* Q: Is the active audience growing? */}
         <Card>
           <CardHeader
-            title="Revenue by plan"
-            subtitle="Share of MRR by subscription tier"
-            info="How total Monthly Recurring Revenue splits across your plan tiers."
+            title="User growth"
+            subtitle={`Daily active accounts · last ${serverRange} days`}
+            info="Active users are unique accounts with at least one session on a given day."
+            action={
+              <HeadlineStat value={formatNumber(users.value)} kpi={users} range={serverRange} />
+            }
           />
-          <PlanBreakdown data={plans} />
+          <div className="px-3 pb-4 pt-6">
+            <AreaTrend
+              data={series}
+              dataKey="users"
+              name="Active users"
+              color="#3FD68C"
+              formatter={(v) => formatNumber(v)}
+              compact={(v) => formatNumber(v, true)}
+              height={260}
+              animationBegin={0}
+              animationDuration={800}
+            />
+          </div>
         </Card>
+
+        {/* Q: Where do we lose people / which plans pay? */}
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card>
+            <CardHeader
+              title="Conversion funnel"
+              subtitle={`Where visitors drop off before paying · last ${serverRange} days`}
+              info="Each stage's percentage is its conversion from the stage directly above it."
+            />
+            <ConversionFunnel stages={funnel} />
+          </Card>
+          <Card>
+            <CardHeader
+              title="Revenue by plan"
+              subtitle="Share of current MRR by subscription tier"
+              info="How total Monthly Recurring Revenue splits across your plan tiers today."
+            />
+            <PlanBreakdown data={plans} />
+          </Card>
+        </div>
       </div>
     </motion.div>
   );
