@@ -8,7 +8,12 @@ export type NavItem = {
   subtitle: string;
   /** Whether the page reads the shared 7/30/90-day range. */
   usesRange?: boolean;
+  /** Sidebar group heading. */
+  group: NavGroup;
 };
+
+export const NAV_GROUPS = ["Insights", "Workspace"] as const;
+export type NavGroup = (typeof NAV_GROUPS)[number];
 
 /** The app's main pages: sidebar, mobile nav, command palette and top bar all use this. */
 export const NAV: NavItem[] = [
@@ -18,6 +23,7 @@ export const NAV: NavItem[] = [
     icon: LayoutDashboard,
     subtitle: "Your growth, in motion.",
     usesRange: true,
+    group: "Insights",
   },
   {
     label: "Analytics",
@@ -25,9 +31,22 @@ export const NAV: NavItem[] = [
     icon: LineChart,
     subtitle: "Revenue and engagement trends.",
     usesRange: true,
+    group: "Insights",
   },
-  { label: "Customers", href: "/customers", icon: Users, subtitle: "Accounts and their health." },
-  { label: "Settings", href: "/settings", icon: Settings, subtitle: "Manage your workspace." },
+  {
+    label: "Customers",
+    href: "/customers",
+    icon: Users,
+    subtitle: "Accounts and their health.",
+    group: "Workspace",
+  },
+  {
+    label: "Settings",
+    href: "/settings",
+    icon: Settings,
+    subtitle: "Manage your workspace.",
+    group: "Workspace",
+  },
 ];
 
 export function isNavActive(item: NavItem, pathname: string): boolean {
