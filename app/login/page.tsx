@@ -19,7 +19,7 @@ export default function LoginPage() {
         <h1 className="mt-6 text-xl font-semibold tracking-tight text-fg">
           Welcome back
         </h1>
-        <p className="mt-1 text-sm text-muted">
+        <p className="mt-1 text-sm text-muted-foreground">
           Revenue and growth analytics for SaaS teams.
         </p>
 
@@ -31,7 +31,7 @@ export default function LoginPage() {
           <ArrowRight className="h-4 w-4" />
         </Link>
 
-        <p className="mt-4 text-center text-xs text-muted">
+        <p className="mt-4 text-center text-xs text-muted-foreground">
           Demo workspace with sample data — no account needed.
         </p>
       </div>

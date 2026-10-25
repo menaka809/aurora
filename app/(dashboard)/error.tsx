@@ -24,7 +24,7 @@ export default function DashboardError({
         <h2 className="text-lg font-semibold tracking-tight text-fg">
           Something went wrong
         </h2>
-        <p className="text-sm text-muted">
+        <p className="text-sm text-muted-foreground">
           This view couldn&apos;t load. Try again — if it keeps happening, refresh the page.
         </p>
         <button

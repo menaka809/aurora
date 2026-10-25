@@ -39,14 +39,14 @@ export default function Modal({
                 {title}
               </Dialog.Title>
               {description && (
-                <Dialog.Description className="mt-1 text-sm text-muted">
+                <Dialog.Description className="mt-1 text-sm text-muted-foreground">
                   {description}
                 </Dialog.Description>
               )}
             </div>
             <Dialog.Close
               aria-label="Close"
-              className="rounded-md p-1 text-muted transition-colors hover:text-fg"
+              className="rounded-md p-1 text-muted-foreground transition-colors hover:text-fg"
             >
               <X className="h-4 w-4" />
             </Dialog.Close>

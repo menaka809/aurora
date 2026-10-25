@@ -22,8 +22,8 @@ export function Card({
 export function InfoTip({ text }: { text: string }) {
   return (
     <span className="group/info relative inline-flex align-middle">
-      <Info className="h-3.5 w-3.5 cursor-help text-muted/70 transition-colors hover:text-fg" />
-      <span className="pointer-events-none absolute left-1/2 top-6 z-30 w-56 -translate-x-1/2 rounded-lg border border-border bg-elevated px-3 py-2 text-xs leading-relaxed text-muted opacity-0 shadow-xl transition-opacity duration-200 group-hover/info:opacity-100">
+      <Info className="h-3.5 w-3.5 cursor-help text-muted-foreground/70 transition-colors hover:text-fg" />
+      <span className="pointer-events-none absolute left-1/2 top-6 z-30 w-56 -translate-x-1/2 rounded-lg border border-border bg-elevated px-3 py-2 text-xs leading-relaxed text-muted-foreground opacity-0 shadow-xl transition-opacity duration-200 group-hover/info:opacity-100">
         {text}
       </span>
     </span>
@@ -50,7 +50,7 @@ export function CardHeader({
           </h3>
           {info && <InfoTip text={info} />}
         </div>
-        {subtitle && <p className="mt-0.5 text-xs text-muted">{subtitle}</p>}
+        {subtitle && <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>}
       </div>
       {action && <div className="shrink-0">{action}</div>}
     </div>

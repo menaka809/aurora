@@ -1,11 +1,16 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* Aurora is dark by default and adds `.light` for light mode, so shadcn's
+   `dark:` variants apply whenever <html> is not `.light`. */
+@custom-variant dark (&:where(html:not(.light), html:not(.light) *));
 
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-elevated: var(--elevated);
   --color-fg: var(--fg);
-  --color-muted: var(--muted);
   --color-primary: var(--primary);
   --color-primary-soft: var(--primary-soft);
   --color-success: var(--success);
@@ -13,8 +18,34 @@
   --color-danger: var(--danger);
   --color-border: var(--border);
 
+  /* shadcn/ui token names, mapped onto Aurora's palette */
+  --color-background: var(--bg);
+  --color-foreground: var(--fg);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--fg);
+  --color-popover: var(--elevated);
+  --color-popover-foreground: var(--fg);
+  --color-primary-foreground: #ffffff;
+  --color-secondary: var(--elevated);
+  --color-secondary-foreground: var(--fg);
+  --color-muted: var(--elevated);
+  --color-muted-foreground: var(--muted);
+  /* A tint, not a surface: menus and popovers already sit on --elevated,
+     so their hover/focus highlight must differ from it to be visible. */
+  --color-accent: color-mix(in oklab, var(--fg) 7%, transparent);
+  --color-accent-foreground: var(--fg);
+  --color-destructive: var(--danger);
+  --color-input: var(--border);
+  --color-ring: var(--primary);
+
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
 }
 
 /* ---- Dark (default) ---- */
@@ -150,6 +181,15 @@ body {
   outline: none;
 }
 
+/* Indeterminate progress bar shown while the table reloads */
+@keyframes table-progress {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(300%); }
+}
+.table-progress {
+  animation: table-progress 1s ease-in-out infinite;
+}
+
 /* Dialog / sheet entrance (Radix sets data-state) */
 @keyframes modal-fade-in {
   from { opacity: 0; }
@@ -197,5 +237,31 @@ body {
   }
   main {
     padding: 0 !important;
+  }
+  /* Comfortable page margins (the browser's own header/footer can be turned
+     off in the print dialog under "Headers and footers"). */
+  @page {
+    margin: 14mm 12mm;
+  }
+  /* Keep avatars, status badges and dots in colour. */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  /* Tables: fit the page, no sticky columns, no row splits. */
+  table {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+  th,
+  td {
+    position: static !important;
+    transform: none !important;
+  }
+  tr {
+    break-inside: avoid;
+  }
+  thead {
+    display: table-header-group;
   }
 }

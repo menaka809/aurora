@@ -10,7 +10,7 @@ const MAP: Record<
   active: { cls: "bg-success/10 text-success", dot: "bg-success", label: "Active", pulse: true },
   trial: { cls: "bg-primary/10 text-primary", dot: "bg-primary", label: "Trial" },
   past_due: { cls: "bg-warning/10 text-warning", dot: "bg-warning", label: "Past due" },
-  churned: { cls: "bg-muted/10 text-muted", dot: "bg-muted", label: "Churned" },
+  churned: { cls: "bg-muted-foreground/10 text-muted-foreground", dot: "bg-muted-foreground", label: "Churned" },
 };
 
 export default function StatusBadge({ status }: { status: Status }) {

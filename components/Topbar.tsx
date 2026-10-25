@@ -4,26 +4,13 @@ import { usePathname } from "next/navigation";
 import { Search } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import { useUI } from "@/lib/store";
-
-const TITLES: Record<string, { title: string; sub: string }> = {
-  "/": { title: "Overview", sub: "Your growth, in motion." },
-  "/analytics": { title: "Analytics", sub: "Revenue and engagement trends." },
-  "/customers": { title: "Customers", sub: "Accounts and their health." },
-  "/settings": { title: "Settings", sub: "Manage your workspace." },
-};
+import { navItemFor } from "@/lib/nav";
 
 export default function Topbar() {
   const pathname = usePathname();
   const openCommand = useUI((s) => s.setCommandOpen);
-  const meta =
-    TITLES[pathname] ??
-    (pathname.startsWith("/analytics")
-      ? TITLES["/analytics"]
-      : pathname.startsWith("/customers")
-      ? TITLES["/customers"]
-      : pathname.startsWith("/settings")
-      ? TITLES["/settings"]
-      : TITLES["/"]);
+  const item = navItemFor(pathname);
+  const meta = { title: item.label, sub: item.subtitle };
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-border bg-bg/80 px-5 backdrop-blur-md md:px-8 print:hidden">
@@ -31,13 +18,13 @@ export default function Topbar() {
         <h1 className="truncate text-xl font-semibold tracking-tight text-fg">
           {meta.title}
         </h1>
-        <p className="hidden truncate text-xs text-muted sm:block">{meta.sub}</p>
+        <p className="hidden truncate text-xs text-muted-foreground sm:block">{meta.sub}</p>
       </div>
 
       <div className="flex items-center gap-3">
         <button
           onClick={() => openCommand(true)}
-          className="hidden items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-muted transition-colors hover:text-fg lg:flex"
+          className="hidden items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-fg lg:flex"
         >
           <Search className="h-4 w-4" />
           <span>Search</span>
@@ -48,7 +35,7 @@ export default function Topbar() {
         <button
           onClick={() => openCommand(true)}
           aria-label="Search"
-          className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:text-fg lg:hidden"
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:text-fg lg:hidden"
         >
           <Search className="h-4 w-4" />
         </button>

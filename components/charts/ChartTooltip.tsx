@@ -18,7 +18,7 @@ export default function ChartTooltip({
   return (
     <div className="min-w-[140px] rounded-lg border border-border bg-elevated/95 px-3.5 py-2.5 shadow-xl backdrop-blur-sm">
       {label && (
-        <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-muted">
+        <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
           {label}
         </p>
       )}
@@ -28,7 +28,7 @@ export default function ChartTooltip({
             className="h-2 w-2 shrink-0 rounded-full"
             style={{ background: e.color }}
           />
-          <span className="text-xs text-muted">{e.name}</span>
+          <span className="text-xs text-muted-foreground">{e.name}</span>
           <span className="tabular ml-auto text-sm font-semibold text-fg">
             {typeof e.value === "number" && formatter
               ? formatter(e.value)

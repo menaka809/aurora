@@ -40,7 +40,7 @@ export default function ChannelDonut({
           <span className="tabular text-2xl font-semibold text-fg">
             {formatNumber(signups)}
           </span>
-          <span className="text-[11px] text-muted">signups</span>
+          <span className="text-[11px] text-muted-foreground">signups</span>
         </div>
       </div>
 
@@ -51,7 +51,7 @@ export default function ChannelDonut({
               className="h-2.5 w-2.5 rounded-full"
               style={{ background: c.color }}
             />
-            <span className="text-muted">{c.name}</span>
+            <span className="text-muted-foreground">{c.name}</span>
             <span className="tabular ml-auto font-medium text-fg">{c.value}%</span>
           </li>
         ))}

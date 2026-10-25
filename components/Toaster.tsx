@@ -33,13 +33,13 @@ export default function Toaster() {
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-fg">{t.title}</p>
                 {t.description && (
-                  <p className="mt-0.5 text-xs text-muted">{t.description}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{t.description}</p>
                 )}
               </div>
               <button
                 onClick={() => dismiss(t.id)}
                 aria-label="Dismiss"
-                className="text-muted transition-colors hover:text-fg"
+                className="text-muted-foreground transition-colors hover:text-fg"
               >
                 <X className="h-4 w-4" />
               </button>

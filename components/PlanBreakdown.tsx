@@ -22,7 +22,7 @@ export default function PlanBreakdown({ data }: { data: PlanSlice[] }) {
               <span className="tabular font-medium text-fg">
                 {formatCurrency(p.mrr)}
               </span>
-              <span className="tabular w-10 text-right text-xs text-muted">
+              <span className="tabular w-10 text-right text-xs text-muted-foreground">
                 {p.pct.toFixed(0)}%
               </span>
             </span>

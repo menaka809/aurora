@@ -8,13 +8,10 @@ import AreaTrend from "@/components/charts/AreaTrend";
 import ChannelDonut from "@/components/charts/ChannelDonut";
 import ActivityFeed from "@/components/ActivityFeed";
 import GoalRing from "@/components/GoalRing";
-import type {
-  ActivityItem,
-  Channel,
-  DayPoint,
-  Goal,
-  Kpi,
-} from "@/lib/data/types";
+import RangeBar, { useRange } from "@/components/RangeBar";
+import DeltaBadge from "@/components/DeltaBadge";
+import type { Range } from "@/lib/range";
+import type { Acquisition, ActivityItem, DayPoint, Goal, Kpi } from "@/lib/data/types";
 
 const container: Variants = {
   hidden: {},
@@ -26,23 +23,22 @@ const rise: Variants = {
 };
 
 export default function OverviewView({
+  range: serverRange,
   kpis,
   series,
-  channels,
-  signups,
+  acquisition,
   activity,
   goal,
 }: {
+  range: Range;
   kpis: Kpi[];
   series: DayPoint[];
-  channels: Channel[];
-  signups: number;
+  acquisition: Acquisition;
   activity: ActivityItem[];
   goal: Goal;
 }) {
-  const rows = series as unknown as Record<string, unknown>[];
+  const { range, pending, change } = useRange(serverRange);
   const mrr = kpis.find((k) => k.key === "mrr")!;
-  const mrrUp = mrr.direction === "up";
 
   return (
     <motion.div
@@ -51,112 +47,122 @@ export default function OverviewView({
       animate="show"
       className="mx-auto max-w-[1400px] space-y-4 md:space-y-5"
     >
-      {/* KPI cards */}
-      <motion.div
-        variants={container}
-        className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
-      >
-        {kpis.map((kpi, i) => (
-          <KpiCard key={kpi.key} kpi={kpi} index={i} />
-        ))}
+      <motion.div variants={rise}>
+        <RangeBar range={range} pending={pending} onChange={change} />
       </motion.div>
 
-      {/* Revenue + acquisition */}
-      <motion.div variants={container} className="grid gap-4 lg:grid-cols-3">
-        <motion.div variants={rise} className="lg:col-span-2">
+      {/* Everything below follows the selected period; dim it while it reloads. */}
+      <div
+        aria-busy={pending}
+        className={`space-y-4 transition-opacity md:space-y-5 ${pending ? "opacity-60" : ""}`}
+      >
+        {/* KPI cards */}
+        <motion.div variants={container} className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {kpis.map((kpi, i) => (
+            <KpiCard key={kpi.key} kpi={kpi} index={i} range={serverRange} />
+          ))}
+        </motion.div>
+
+        {/* Revenue + acquisition */}
+        <motion.div variants={container} className="grid gap-4 lg:grid-cols-3">
+          <motion.div variants={rise} className="lg:col-span-2">
+            <Card>
+              <CardHeader
+                title="Recurring revenue"
+                subtitle={`MRR over time · last ${serverRange} days`}
+                info="MRR (Monthly Recurring Revenue) is the predictable subscription revenue billed each month."
+                action={
+                  <DeltaBadge
+                    value={mrr.delta}
+                    up={mrr.direction === "up"}
+                    good={mrr.direction === "up"}
+                    title={`vs previous ${serverRange} days`}
+                  />
+                }
+              />
+              <div className="px-3 pb-4 pt-6">
+                <AreaTrend
+                  data={series}
+                  dataKey="mrr"
+                  name="MRR"
+                  color="#5B8DEF"
+                  formatter={(v) => formatCurrency(v)}
+                  compact={(v) => formatCurrency(v, true)}
+                  animationBegin={500}
+                />
+              </div>
+            </Card>
+          </motion.div>
+
+          <motion.div variants={rise}>
+            <Card className="h-full">
+              <CardHeader
+                title="Acquisition"
+                subtitle={`New signups by source · last ${serverRange} days`}
+                info="The share of new signups attributed to each marketing channel in the selected period."
+                action={
+                  <DeltaBadge
+                    value={Math.abs(acquisition.delta)}
+                    up={acquisition.delta >= 0}
+                    good={acquisition.delta >= 0}
+                    title={`Signups vs previous ${serverRange} days`}
+                  />
+                }
+              />
+              <div className="p-5">
+                <ChannelDonut channels={acquisition.channels} signups={acquisition.signups} />
+              </div>
+            </Card>
+          </motion.div>
+        </motion.div>
+
+        {/* Active users */}
+        <motion.div variants={rise}>
           <Card>
             <CardHeader
-              title="Recurring revenue"
-              subtitle="MRR over time · last 30 days"
-              info="MRR (Monthly Recurring Revenue) is the predictable subscription revenue billed each month."
-              action={
-                <span
-                  className={`tabular rounded-md px-2 py-1 text-xs font-medium ${
-                    mrrUp ? "bg-success/10 text-success" : "bg-danger/10 text-danger"
-                  }`}
-                >
-                  {mrrUp ? "+" : "−"}
-                  {mrr.delta.toFixed(1)}%
-                </span>
-              }
+              title="User growth"
+              subtitle={`Daily active accounts · last ${serverRange} days`}
+              info="Unique accounts with at least one session per day — a measure of engagement, not signups."
             />
             <div className="px-3 pb-4 pt-6">
               <AreaTrend
-                data={rows}
-                dataKey="mrr"
-                name="MRR"
-                color="#5B8DEF"
-                formatter={(v) => formatCurrency(v)}
-                compact={(v) => formatCurrency(v, true)}
-                animationBegin={500}
+                data={series}
+                dataKey="users"
+                name="Active users"
+                color="#3FD68C"
+                formatter={(v) => formatNumber(v)}
+                compact={(v) => formatNumber(v, true)}
+                height={220}
+                animationBegin={700}
               />
             </div>
           </Card>
         </motion.div>
 
-        <motion.div variants={rise}>
-          <Card className="h-full">
-            <CardHeader
-              title="Acquisition"
-              subtitle="New signups by source · last 30 days"
-              info="The share of new signups attributed to each marketing channel over the last 30 days."
-            />
-            <div className="p-5">
-              <ChannelDonut channels={channels} signups={signups} />
-            </div>
-          </Card>
+        {/* Activity + goal (not tied to the period) */}
+        <motion.div variants={container} className="grid gap-4 lg:grid-cols-3">
+          <motion.div variants={rise} className="lg:col-span-2">
+            <Card className="h-full">
+              <CardHeader title="Recent activity" subtitle="Latest account events · last 14 days" />
+              <div className="mt-2">
+                <ActivityFeed items={activity} />
+              </div>
+            </Card>
+          </motion.div>
+          <motion.div variants={rise}>
+            <Card className="flex h-full flex-col">
+              <CardHeader
+                title="MRR goal"
+                subtitle="Progress this quarter"
+                info="Current MRR measured against the quarterly target set by the growth team."
+              />
+              <div className="flex flex-1 items-center justify-center p-5">
+                <GoalRing goal={goal} />
+              </div>
+            </Card>
+          </motion.div>
         </motion.div>
-      </motion.div>
-
-      {/* Active users */}
-      <motion.div variants={rise}>
-        <Card>
-          <CardHeader
-            title="User growth"
-            subtitle="Daily active accounts · last 30 days"
-            info="Unique accounts with at least one session per day — a measure of engagement, not signups."
-          />
-          <div className="px-3 pb-4 pt-6">
-            <AreaTrend
-              data={rows}
-              dataKey="users"
-              name="Active users"
-              color="#3FD68C"
-              formatter={(v) => formatNumber(v)}
-              compact={(v) => formatNumber(v, true)}
-              height={220}
-              animationBegin={700}
-            />
-          </div>
-        </Card>
-      </motion.div>
-
-      {/* Activity + goal */}
-      <motion.div variants={container} className="grid gap-4 lg:grid-cols-3">
-        <motion.div variants={rise} className="lg:col-span-2">
-          <Card className="h-full">
-            <CardHeader
-              title="Recent activity"
-              subtitle="Latest account events · last 14 days"
-            />
-            <div className="mt-2">
-              <ActivityFeed items={activity} />
-            </div>
-          </Card>
-        </motion.div>
-        <motion.div variants={rise}>
-          <Card className="flex h-full flex-col">
-            <CardHeader
-              title="MRR goal"
-              subtitle="Progress this quarter"
-              info="Current MRR measured against the quarterly target set by the growth team."
-            />
-            <div className="flex flex-1 items-center justify-center p-5">
-              <GoalRing goal={goal} />
-            </div>
-          </Card>
-        </motion.div>
-      </motion.div>
+      </div>
     </motion.div>
   );
 }

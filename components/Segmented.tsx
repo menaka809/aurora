@@ -31,7 +31,7 @@ export default function Segmented<T extends string>({
               />
             )}
             <span
-              className={`relative z-10 ${active ? "text-fg" : "text-muted"}`}
+              className={`relative z-10 ${active ? "text-fg" : "text-muted-foreground"}`}
             >
               {o.label}
             </span>

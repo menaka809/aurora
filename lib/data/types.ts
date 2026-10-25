@@ -1,4 +1,5 @@
 import type { Plan } from "@/lib/customers";
+import type { Channel } from "@/lib/metrics";
 
 export type { DayPoint, Channel } from "@/lib/metrics";
 export type { Customer, CustomerProfile, Plan, Status } from "@/lib/customers";
@@ -8,7 +9,7 @@ export type Kpi = {
   label: string;
   value: number;
   format: "currency" | "number" | "percent";
-  /** Absolute change over the window, rounded to 1 decimal. */
+  /** Size of the change vs the same point one period earlier (direction says which way). */
   delta: number;
   /** "%" for relative change, "pts" for percentage-point change. */
   deltaUnit: "%" | "pts";
@@ -36,3 +37,11 @@ export type ActivityItem = {
 
 /** Minimal customer record for client-side search. */
 export type CustomerIndexEntry = { id: string; name: string; email: string; company: string };
+
+export type Acquisition = {
+  channels: Channel[];
+  /** Signups in the period. */
+  signups: number;
+  /** % change vs the previous period of the same length. */
+  delta: number;
+};

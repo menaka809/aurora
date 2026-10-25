@@ -48,18 +48,18 @@ export default function GoalRing({ goal }: { goal: Goal }) {
           <span className="tabular text-3xl font-semibold tracking-tight text-fg">
             {shown.toFixed(0)}%
           </span>
-          <span className="text-[11px] text-muted">of goal</span>
+          <span className="text-[11px] text-muted-foreground">of goal</span>
         </div>
       </div>
       <div className="mt-4 flex w-full items-center justify-between text-sm">
         <div>
-          <p className="text-xs text-muted">Current</p>
+          <p className="text-xs text-muted-foreground">Current</p>
           <p className="tabular font-medium text-fg">
             {formatCurrency(goal.current)}
           </p>
         </div>
         <div className="text-right">
-          <p className="text-xs text-muted">Target</p>
+          <p className="text-xs text-muted-foreground">Target</p>
           <p className="tabular font-medium text-fg">
             {formatCurrency(goal.target)}
           </p>

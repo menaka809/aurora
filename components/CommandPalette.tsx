@@ -3,16 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  LayoutDashboard,
-  LineChart,
-  Users,
-  Settings,
-  Search,
-  CornerDownLeft,
-  type LucideIcon,
-} from "lucide-react";
+import { Search, CornerDownLeft, type LucideIcon } from "lucide-react";
 import { useUI } from "@/lib/store";
+import { NAV } from "@/lib/nav";
 import { initials, avatarColor } from "@/lib/customers";
 import type { CustomerIndexEntry } from "@/lib/data/types";
 
@@ -26,12 +19,14 @@ type Result = {
   group: "Navigate" | "Customers";
 };
 
-const PAGES: Result[] = [
-  { id: "nav-overview", label: "Overview", href: "/", icon: LayoutDashboard, group: "Navigate" },
-  { id: "nav-analytics", label: "Analytics", href: "/analytics", icon: LineChart, group: "Navigate" },
-  { id: "nav-customers", label: "Customers", href: "/customers", icon: Users, group: "Navigate" },
-  { id: "nav-settings", label: "Settings", href: "/settings", icon: Settings, group: "Navigate" },
-];
+const PAGES: Result[] = NAV.map((item) => ({
+  id: `nav-${item.href}`,
+  label: item.label,
+  hint: item.subtitle,
+  href: item.href,
+  icon: item.icon,
+  group: "Navigate",
+}));
 
 export default function CommandPalette({
   customers,
@@ -138,7 +133,7 @@ function PaletteBody({
   return (
     <>
       <div className="flex items-center gap-3 border-b border-border px-4">
-        <Search className="h-4 w-4 text-muted" />
+        <Search className="h-4 w-4 text-muted-foreground" />
         <input
           autoFocus
           value={query}
@@ -148,16 +143,16 @@ function PaletteBody({
           }}
           onKeyDown={onKeyDown}
           placeholder="Search pages, customers and companies…"
-          className="w-full bg-transparent py-4 text-sm text-fg outline-none placeholder:text-muted"
+          className="w-full bg-transparent py-4 text-sm text-fg outline-none placeholder:text-muted-foreground"
         />
-        <kbd className="rounded border border-border px-1.5 py-0.5 text-[10px] tabular text-muted">
+        <kbd className="rounded border border-border px-1.5 py-0.5 text-[10px] tabular text-muted-foreground">
           ESC
         </kbd>
       </div>
 
       <div className="max-h-[52vh] overflow-y-auto p-2">
         {results.length === 0 && (
-          <p className="px-3 py-6 text-center text-sm text-muted">
+          <p className="px-3 py-6 text-center text-sm text-muted-foreground">
             No results for “{query}”.
           </p>
         )}
@@ -166,7 +161,7 @@ function PaletteBody({
           if (!items.length) return null;
           return (
             <div key={group} className="mb-1">
-              <p className="px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide text-muted">
+              <p className="px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                 {group}
               </p>
               {items.map((r) => {
@@ -180,7 +175,7 @@ function PaletteBody({
                     onMouseEnter={() => setActive(rowIdx)}
                     onClick={() => go(r)}
                     className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${
-                      isActive ? "bg-surface text-fg" : "text-muted"
+                      isActive ? "bg-surface text-fg" : "text-muted-foreground"
                     }`}
                   >
                     {Icon ? (
@@ -195,10 +190,10 @@ function PaletteBody({
                     )}
                     <span className="truncate text-fg">{r.label}</span>
                     {r.hint && (
-                      <span className="truncate text-xs text-muted">{r.hint}</span>
+                      <span className="truncate text-xs text-muted-foreground">{r.hint}</span>
                     )}
                     {isActive && (
-                      <CornerDownLeft className="ml-auto h-3.5 w-3.5 shrink-0 text-muted" />
+                      <CornerDownLeft className="ml-auto h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                     )}
                   </button>
                 );

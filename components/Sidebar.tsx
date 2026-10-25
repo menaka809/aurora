@@ -3,28 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import {
-  LayoutDashboard,
-  LineChart,
-  Users,
-  Settings,
-  PanelLeftClose,
-  PanelLeft,
-  Sparkles,
-  type LucideIcon,
-} from "lucide-react";
+import { PanelLeftClose, PanelLeft, Sparkles } from "lucide-react";
 import { useUI } from "@/lib/store";
 import { useHydrated } from "@/lib/useHydrated";
+import { NAV, isNavActive } from "@/lib/nav";
 import UserMenu from "./UserMenu";
-
-type NavItem = { label: string; href: string; icon: LucideIcon };
-
-const NAV: NavItem[] = [
-  { label: "Overview", href: "/", icon: LayoutDashboard },
-  { label: "Analytics", href: "/analytics", icon: LineChart },
-  { label: "Customers", href: "/customers", icon: Users },
-  { label: "Settings", href: "/settings", icon: Settings },
-];
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -56,10 +39,7 @@ export default function Sidebar() {
       {/* Nav */}
       <nav className="flex flex-1 flex-col gap-1 px-3 py-4">
         {NAV.map((item) => {
-          const active =
-            item.href === "/"
-              ? pathname === "/"
-              : pathname.startsWith(item.href);
+          const active = isNavActive(item, pathname);
           const Icon = item.icon;
           return (
             <Link
@@ -67,7 +47,7 @@ export default function Sidebar() {
               href={item.href}
               title={collapsed ? item.label : undefined}
               className={`group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
-                active ? "text-fg" : "text-muted hover:text-fg"
+                active ? "text-fg" : "text-muted-foreground hover:text-fg"
               }`}
             >
               {active && (
@@ -96,7 +76,7 @@ export default function Sidebar() {
       <div className="border-t border-border p-3">
         <button
           onClick={toggle}
-          className="mb-2 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted transition-colors hover:text-fg"
+          className="mb-2 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:text-fg"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? (

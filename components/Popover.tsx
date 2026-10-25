@@ -90,7 +90,7 @@ export function MenuItem({
 
 export function MenuLabel({ children }: { children: ReactNode }) {
   return (
-    <p className="px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide text-muted">
+    <p className="px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
       {children}
     </p>
   );

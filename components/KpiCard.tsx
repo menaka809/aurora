@@ -12,7 +12,16 @@ const item: Variants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
 };
 
-export default function KpiCard({ kpi, index }: { kpi: Kpi; index: number }) {
+export default function KpiCard({
+  kpi,
+  index,
+  range,
+}: {
+  kpi: Kpi;
+  index: number;
+  /** Comparison period in days, shown as "vs previous N days". */
+  range: number;
+}) {
   const value = useCountUp(kpi.value, { duration: 1500, delay: 250 + index * 90 });
   const isUp = kpi.direction === "up";
   const good = isUp === kpi.positiveIsGood;
@@ -33,8 +42,9 @@ export default function KpiCard({ kpi, index }: { kpi: Kpi; index: number }) {
       />
 
       <div className="relative flex items-start justify-between gap-3">
-        <span className="text-xs text-muted">{kpi.label}</span>
+        <span className="text-xs text-muted-foreground">{kpi.label}</span>
         <span
+          title={`vs previous ${range} days`}
           className={`flex shrink-0 items-center gap-0.5 rounded-full px-2 py-0.5 text-xs font-medium tabular ${
             good ? "bg-success/10 text-success" : "bg-danger/10 text-danger"
           }`}
@@ -52,6 +62,7 @@ export default function KpiCard({ kpi, index }: { kpi: Kpi; index: number }) {
       <div className="relative mt-3 tabular text-3xl font-semibold tracking-tight text-fg">
         {formatValue(value, kpi.format)}
       </div>
+      <p className="relative mt-1 text-[11px] text-muted-foreground">vs previous {range} days</p>
 
       <Sparkline
         data={kpi.spark}

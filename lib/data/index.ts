@@ -6,9 +6,19 @@ import { cache } from "react";
 import { todayUTC, daysBefore } from "@/lib/time";
 import { CHANNELS, pctChange, seriesEnding } from "@/lib/metrics";
 import { buildCustomers, getProfile as buildProfile, PLANS } from "@/lib/customers";
+import {
+  applyCustomerQuery,
+  filterRows,
+  sortRows,
+  type CustomerPage,
+  type CustomerQuery,
+  type CustomerRow,
+} from "@/lib/customers-query";
+import { BUILT_IN_VIEWS } from "@/lib/views";
+import type { Range } from "@/lib/range";
 import type {
+  Acquisition,
   ActivityItem,
-  Channel,
   Customer,
   CustomerIndexEntry,
   CustomerProfile,
@@ -19,41 +29,74 @@ import type {
   PlanSlice,
 } from "./types";
 
-const HISTORY_DAYS = 90;
-const KPI_WINDOW = 30;
+// Two of the longest period (90 days), so every range has a full previous period.
+const HISTORY_DAYS = 180;
 
 const snapshot = cache(() => {
   const today = todayUTC();
   const series = seriesEnding(today, HISTORY_DAYS);
   const customers = buildCustomers(today, series[series.length - 1].mrr);
-  return { today, series, customers };
+  const profiles = customers.map((c) => buildProfile(c, today));
+  const rows: CustomerRow[] = profiles.map((p) => ({
+    id: p.id,
+    name: p.name,
+    email: p.email,
+    company: p.company,
+    plan: p.plan,
+    listPrice: p.listPrice,
+    mrr: p.mrr,
+    status: p.status,
+    joined: p.joined,
+    seats: p.seats,
+    manager: p.manager,
+    lastLoginDays: p.lastLoginDays,
+    ltv: p.ltv,
+    health: p.health,
+  }));
+  return { today, series, customers, profiles, rows };
 });
 
 const round1 = (n: number) => Math.round(n * 10) / 10;
 const round2 = (n: number) => Math.round(n * 100) / 100;
+
+// Optional artificial delay (e.g. DEMO_LATENCY_MS=400) so the demo shows its
+// loading skeletons the way a real API would. Applied to each page's main
+// read; pages fetch in parallel, so a page waits about one delay in total.
+const LATENCY_MS = Number(process.env.DEMO_LATENCY_MS ?? 0) || 0;
+const demoLatency = () =>
+  LATENCY_MS > 0 ? new Promise<void>((r) => setTimeout(r, LATENCY_MS)) : Promise.resolve();
 
 /** Today's reference date (ISO), as used by every other function here. */
 export async function getToday(): Promise<string> {
   return snapshot().series[HISTORY_DAYS - 1].date;
 }
 
-export async function getSeries(days: 7 | 30 | 90): Promise<DayPoint[]> {
-  return snapshot().series.slice(-days);
+/** The last `range` days, oldest first. */
+export async function getSeries(range: Range): Promise<DayPoint[]> {
+  await demoLatency();
+  return snapshot().series.slice(-range);
 }
 
-export async function getKpis(): Promise<Kpi[]> {
-  const window = snapshot().series.slice(-KPI_WINDOW);
-  const first = window[0];
-  const last = window[window.length - 1];
+/**
+ * Headline KPIs for the period. Each is compared with the same point one
+ * period earlier ("vs previous 30 days"): relative % for MRR and users,
+ * percentage points for churn and NRR.
+ */
+export async function getKpis(range: Range): Promise<Kpi[]> {
+  await demoLatency();
+  const { series } = snapshot();
+  const window = series.slice(-range);
+  const last = series[series.length - 1];
+  const prev = series[series.length - 1 - range];
 
   const relative = (a: number, b: number) => round1(pctChange(a, b));
   const points = (a: number, b: number) => round2(b - a);
   const dir = (d: number): "up" | "down" => (d >= 0 ? "up" : "down");
 
-  const mrr = relative(first.mrr, last.mrr);
-  const users = relative(first.users, last.users);
-  const churn = points(first.churn, last.churn);
-  const nrr = points(first.nrr, last.nrr);
+  const mrr = relative(prev.mrr, last.mrr);
+  const users = relative(prev.users, last.users);
+  const churn = points(prev.churn, last.churn);
+  const nrr = points(prev.nrr, last.nrr);
 
   return [
     {
@@ -109,18 +152,23 @@ export async function getGoal(): Promise<Goal> {
   return { current, target: Math.ceil((current * 1.17) / 10_000) * 10_000 };
 }
 
-function signupsLast30(): number {
-  return snapshot()
-    .series.slice(-KPI_WINDOW)
-    .reduce((s, d) => s + d.signups, 0);
+/** Total signups in the last `range` days, and in the `range` days before that. */
+function signupsFor(range: Range): { current: number; previous: number } {
+  const { series } = snapshot();
+  const sum = (days: DayPoint[]) => days.reduce((s, d) => s + d.signups, 0);
+  return {
+    current: sum(series.slice(-range)),
+    previous: sum(series.slice(-2 * range, -range)),
+  };
 }
 
-export async function getAcquisition(): Promise<{ channels: Channel[]; signups: number }> {
-  return { channels: CHANNELS, signups: signupsLast30() };
+export async function getAcquisition(range: Range): Promise<Acquisition> {
+  const { current, previous } = signupsFor(range);
+  return { channels: CHANNELS, signups: current, delta: round1(pctChange(previous, current)) };
 }
 
-export async function getFunnel(): Promise<FunnelStage[]> {
-  const signups = signupsLast30();
+export async function getFunnel(range: Range): Promise<FunnelStage[]> {
+  const signups = signupsFor(range).current;
   const trials = Math.round(signups * 0.41);
   return [
     { stage: "Visitors", value: Math.round(signups / 0.031) },
@@ -148,11 +196,11 @@ export async function getPlanBreakdown(): Promise<PlanSlice[]> {
 
 /** Latest account events, built from the same records as the profiles. */
 export async function getActivity(limit = 7, maxPayments = 3): Promise<ActivityItem[]> {
-  const { customers, today } = snapshot();
+  const { profiles: customers, today } = snapshot();
   const events: ActivityItem[] = [];
 
   for (const c of customers) {
-    for (const e of buildProfile(c, today).timeline) {
+    for (const e of c.timeline) {
       const daysAgo = daysBefore(e.date, today);
       if (daysAgo > 14) continue;
       const base = { id: e.id, customerId: c.id, who: c.name, daysAgo };
@@ -201,7 +249,34 @@ export async function getCustomer(id: string): Promise<Customer | undefined> {
 }
 
 export async function getProfile(id: string): Promise<CustomerProfile | undefined> {
-  const { customers, today } = snapshot();
-  const c = customers.find((x) => x.id === id);
-  return c ? buildProfile(c, today) : undefined;
+  await demoLatency();
+  return snapshot().profiles.find((p) => p.id === id);
 }
+
+/** One filtered, sorted page of the customers table. */
+export async function getCustomerPage(query: CustomerQuery): Promise<CustomerPage> {
+  await demoLatency();
+  const { rows, today } = snapshot();
+  return applyCustomerQuery(rows, query, today);
+}
+
+/** Row counts for each built-in view tab. */
+export async function getViewCounts(): Promise<Record<string, number>> {
+  const { rows, today } = snapshot();
+  return Object.fromEntries(
+    BUILT_IN_VIEWS.map((v) => [v.id, filterRows(rows, v.filters, { todayMs: today }).length])
+  );
+}
+
+/** Rows for CSV export: specific ids, or everything matching the query. */
+export async function getCustomerRowsForExport(
+  query: CustomerQuery,
+  ids: string[] | null
+): Promise<CustomerRow[]> {
+  const { rows, today } = snapshot();
+  const picked = ids ? rows.filter((r) => ids.includes(r.id)) : filterRows(rows, query, { todayMs: today });
+  return sortRows(picked, query.sort, query.dir);
+}
+
+/** Staff who can own accounts, for the bulk "Assign manager" action. */
+export { MANAGERS } from "@/lib/customers";

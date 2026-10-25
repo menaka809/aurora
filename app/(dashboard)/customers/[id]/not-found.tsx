@@ -6,13 +6,13 @@ export default function CustomerNotFound() {
   return (
     <div className="mx-auto max-w-lg pt-10">
       <Card className="flex flex-col items-center gap-3 p-10 text-center">
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-elevated text-muted">
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-elevated text-muted-foreground">
           <UserX className="h-6 w-6" />
         </span>
         <h2 className="text-lg font-semibold tracking-tight text-fg">
           Customer not found
         </h2>
-        <p className="text-sm text-muted">
+        <p className="text-sm text-muted-foreground">
           This account doesn&apos;t exist or may have been removed.
         </p>
         <Link

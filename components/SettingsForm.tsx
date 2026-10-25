@@ -138,7 +138,7 @@ function AppearanceCard() {
       <div className="flex items-center justify-between p-5">
         <div>
           <p className="text-sm text-fg">Theme</p>
-          <p className="text-xs text-muted">Applies instantly across the app.</p>
+          <p className="text-xs text-muted-foreground">Applies instantly across the app.</p>
         </div>
         <Segmented<Theme>
           idBase="settings-theme"
@@ -173,8 +173,8 @@ function Field({
   return (
     <div className={className}>
       <div className="mb-1.5 flex items-center justify-between">
-        <label className="text-xs font-medium text-muted">{label}</label>
-        {hint && <span className="text-xs text-muted">{hint}</span>}
+        <label className="text-xs font-medium text-muted-foreground">{label}</label>
+        {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
       </div>
       {children}
       {error && <p className="mt-1.5 text-xs text-danger">{error}</p>}
