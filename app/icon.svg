@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5b8def"/>
+      <stop offset="1" stop-color="#3a6ad0"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="8" fill="url(#g)"/>
+  <!-- Aurora sparkle mark -->
+  <path fill="#fff" d="M15.3 6.9a.7.7 0 0 1 1.4 0l1 5.2a2 2 0 0 0 1.6 1.6l5.2 1a.7.7 0 0 1 0 1.4l-5.2 1a2 2 0 0 0-1.6 1.6l-1 5.2a.7.7 0 0 1-1.4 0l-1-5.2a2 2 0 0 0-1.6-1.6l-5.2-1a.7.7 0 0 1 0-1.4l5.2-1a2 2 0 0 0 1.6-1.6z"/>
+  <circle cx="23.5" cy="8.5" r="1.6" fill="#fff" opacity=".85"/>
+</svg>
