@@ -1,6 +1,7 @@
 // The one place pages get data from. Everything is derived from a single
 // snapshot of "today", so every number on screen agrees with every other.
-// Phase 4 swaps these internals for database queries; callers stay the same.
+// Every function is async, so a database can replace these internals without
+// changing any caller.
 
 import { cache } from "react";
 import { todayUTC, daysBefore } from "@/lib/time";
@@ -27,6 +28,7 @@ import type {
   Goal,
   Kpi,
   PlanSlice,
+  WeeklyDigest,
 } from "./types";
 
 // Two of the longest period (90 days), so every range has a full previous period.
@@ -234,6 +236,24 @@ export async function getActivity(limit = 7, maxPayments = 3): Promise<ActivityI
     if (out.length === limit) break;
   }
   return out;
+}
+
+/** The last 7 days as the weekly digest email would report them. */
+export async function getWeeklyDigest(): Promise<WeeklyDigest> {
+  const { customers } = snapshot();
+  const byMrr = [...customers].sort((a, b) => b.mrr - a.mrr);
+  const failed = byMrr.find((c) => c.status === "past_due");
+  const trial = [...customers]
+    .filter((c) => c.status === "trial")
+    .sort((a, b) => b.joined.localeCompare(a.joined))[0];
+  return {
+    kpis: await getKpis(7),
+    topAccounts: byMrr
+      .slice(0, 4)
+      .map(({ id, name, company, plan, mrr }) => ({ id, name, company, plan, mrr })),
+    failedPayment: failed ? { name: failed.name, amount: failed.listPrice } : null,
+    newTrial: trial ? { name: trial.name, plan: trial.plan } : null,
+  };
 }
 
 export async function getCustomers(): Promise<Customer[]> {

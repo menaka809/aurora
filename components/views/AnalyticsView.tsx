@@ -96,7 +96,7 @@ export default function AnalyticsView({
         </div>
 
         {/* Q: Where do we lose people / which plans pay? */}
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-2 [&>*]:min-w-0">
           <div className="rise" style={delay(3)}>
             <Card className="h-full">
               <CardHeader

@@ -20,8 +20,7 @@ type NotesState = {
   deleteNote: (customerId: string, noteId: string) => void;
 };
 
-// Demo-only persistence in localStorage; Phase 4 moves notes to the database
-// behind a server action.
+// Demo-only persistence: notes are saved in this browser (localStorage).
 export const useNotes = create<NotesState>()(
   persist(
     (set) => ({

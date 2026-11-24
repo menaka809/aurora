@@ -203,11 +203,11 @@ export function SettingsSkeleton() {
     <div className="mx-auto max-w-[1400px] lg:grid lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-8">
       <Loading label="settings" />
       <div aria-hidden className="mb-4 flex gap-1 lg:mb-0 lg:flex-col">
-        {[0, 1, 2, 3].map((i) => (
+        {[0, 1, 2].map((i) => (
           <Skeleton key={i} className="h-9 w-28 lg:w-full" />
         ))}
       </div>
-      <div className="space-y-4 md:space-y-5">
+      <div className="grid items-start gap-5 2xl:grid-cols-[minmax(0,1fr)_380px]">
         <CardShell>
           <div className="space-y-2 border-b border-border px-5 py-4 sm:px-6">
             <Skeleton className="h-4 w-24" />
@@ -231,7 +231,11 @@ export function SettingsSkeleton() {
             </div>
           </div>
         </CardShell>
-        <CardShell className="h-72" />
+        {/* Preview column (wide screens only) */}
+        <div className="hidden space-y-2 2xl:block">
+          <Skeleton className="h-3 w-40" />
+          <CardShell className="h-80" />
+        </div>
       </div>
     </div>
   );

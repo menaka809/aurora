@@ -64,7 +64,8 @@ export default function CommandPalette({ customers }: { customers: CustomerIndex
       onOpenChange={onOpenChange}
       title="Command palette"
       description="Search pages, customers and actions"
-      className="max-w-xl sm:max-w-xl"
+      // Opens near the top (like Spotlight) so the whole list fits on screen.
+      className="top-[max(1rem,12vh)] max-w-xl sm:max-w-xl"
     >
       <Command loop className="p-1.5">
         <CommandInput

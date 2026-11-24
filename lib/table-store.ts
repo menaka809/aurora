@@ -46,8 +46,8 @@ export const DEFAULT_COLUMNS: ColumnPrefs = {
   sizing: {},
 };
 
-// Demo-only persistence in localStorage; Phase 4 moves saved views and
-// overrides into the database (saved_views, customers.manager, customer_tags).
+// Demo-only persistence: table layout, saved views and bulk edits are saved in
+// this browser (localStorage).
 export const useCustomerTable = create<TableState>()(
   persist(
     (set) => ({

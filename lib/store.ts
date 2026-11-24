@@ -56,16 +56,14 @@ type UIState = {
   schedulePlanChange: (customerId: string, change: PlanChange) => void;
   cancelPlanChange: (customerId: string) => void;
   setNotification: (key: keyof NotificationPrefs, on: boolean) => void;
-  /** Back to the seeded demo account (theme and sidebar are kept). */
-  resetAccount: () => void;
 };
 
 const showsLight = (theme: Theme) =>
   theme === "light" ||
   (theme === "system" && window.matchMedia("(prefers-color-scheme: light)").matches);
 
-// Demo-only persistence in localStorage; Phase 4 moves profile and plan
-// changes to the database.
+// Demo-only persistence: settings, profile and plan changes are saved in this
+// browser (localStorage).
 export const useUI = create<UIState>()(
   persist(
     (set) => ({
@@ -79,8 +77,6 @@ export const useUI = create<UIState>()(
       toggleTheme: () => set((s) => ({ theme: showsLight(s.theme) ? "dark" : "light" })),
       setNotification: (key, on) =>
         set((s) => ({ notifications: { ...s.notifications, [key]: on } })),
-      resetAccount: () =>
-        set({ profile: DEFAULT_PROFILE, planChanges: {}, notifications: DEFAULT_NOTIFICATIONS }),
       toggleSidebar: () =>
         set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
       setCommandOpen: (commandOpen) => set({ commandOpen }),

@@ -17,7 +17,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily" as const,
       priority: item.href === "/" ? 1 : 0.8,
     })),
-    { url: new URL("/login", base).toString(), lastModified: now, priority: 0.5 },
     ...customers.map((c) => ({
       url: new URL(`/customers/${c.id}`, base).toString(),
       lastModified: now,

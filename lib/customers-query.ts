@@ -1,7 +1,7 @@
 // The customers table's query: URL parsers shared by the server page, the
 // client toolbar and the CSV export route, plus the pure filter/sort/page
-// function. Phase 4 replaces `applyCustomerQuery` with SQL; the URL contract
-// stays the same.
+// function. A database could replace `applyCustomerQuery` with SQL without
+// changing the URL contract.
 
 import {
   createLoader,

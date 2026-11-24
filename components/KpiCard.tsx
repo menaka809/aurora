@@ -19,7 +19,7 @@ export default function KpiCard({
 
   return (
     <div
-      className="rise glass theme-tint relative overflow-hidden rounded-xl border border-border p-5"
+      className="rise glass relative overflow-hidden rounded-xl border border-border p-5"
       style={{ animationDelay: `${index * 70}ms` }}
     >
       {/* faint gradient wash under the glass */}
