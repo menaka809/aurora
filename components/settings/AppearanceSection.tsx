@@ -2,11 +2,17 @@
 
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import SettingsSection from "./SettingsSection";
+import SettingsSection, { PreviewCard, SettingsPanel } from "./SettingsSection";
 import ChoiceCards, { type Choice } from "./ChoiceCards";
+import Sparkline from "@/components/charts/Sparkline";
+import DeltaBadge from "@/components/DeltaBadge";
 import { useUI, type Theme } from "@/lib/store";
 import { useCustomerTable, type Density } from "@/lib/table-store";
 import { useHydrated } from "@/lib/useHydrated";
+import { useResolvedTheme } from "@/lib/theme";
+import { avatarColor, initials } from "@/lib/customers";
+import { formatCurrency } from "@/lib/format";
+import type { WeeklyDigest } from "@/lib/data/types";
 
 // Fixed palettes so each preview shows its theme whatever is active now.
 const PALETTES = {
@@ -95,7 +101,7 @@ const DENSITIES: Choice<Density>[] = [
   },
 ];
 
-export default function AppearanceSection() {
+export default function AppearanceSection({ digest }: { digest: WeeklyDigest }) {
   const hydrated = useHydrated();
   const theme = useUI((s) => s.theme);
   const setTheme = useUI((s) => s.setTheme);
@@ -103,43 +109,138 @@ export default function AppearanceSection() {
   const setDensity = useCustomerTable((s) => s.setDensity);
 
   return (
-    <SettingsSection
-      id="appearance"
-      title="Appearance"
-      description="Changes apply instantly and are remembered on this device."
+    <SettingsPanel
+      preview={
+        <AppearancePreview
+          digest={digest}
+          theme={hydrated ? theme : "dark"}
+          density={hydrated ? density : "comfortable"}
+        />
+      }
     >
-      <div className="space-y-7">
-        <div>
-          <h3 className="text-sm font-medium text-fg">Theme</h3>
-          <p className="mb-3 mt-0.5 text-xs text-muted-foreground">
-            You can also switch from the top bar or with the command palette.
-          </p>
-          <ChoiceCards label="Theme" value={hydrated ? theme : ""} onChange={setTheme} choices={THEMES} />
-        </div>
-
-        <div>
-          <div className="mb-3 flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
-            <div>
-              <h3 className="text-sm font-medium text-fg">Table density</h3>
-              <p className="mt-0.5 text-xs text-muted-foreground">How tightly rows are packed in the customers table.</p>
-            </div>
-            <Link
-              href="/customers"
-              className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-            >
-              Open customers
-              <ArrowRight className="size-3" />
-            </Link>
+      <SettingsSection
+        id="appearance"
+        title="Appearance"
+        description="Changes apply instantly and are remembered on this device."
+      >
+        <div className="space-y-7">
+          <div>
+            <h3 className="text-sm font-medium text-fg">Theme</h3>
+            <p className="mb-3 mt-0.5 text-xs text-muted-foreground">
+              You can also switch from the top bar or with the command palette.
+            </p>
+            <ChoiceCards label="Theme" value={hydrated ? theme : ""} onChange={setTheme} choices={THEMES} />
           </div>
-          <ChoiceCards
-            label="Table density"
-            value={hydrated ? density : ""}
-            onChange={setDensity}
-            choices={DENSITIES}
-            columns={2}
-          />
+
+          <div>
+            <div className="mb-3 flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
+              <div>
+                <h3 className="text-sm font-medium text-fg">Table density</h3>
+                <p className="mt-0.5 text-xs text-muted-foreground">How tightly rows are packed in the customers table.</p>
+              </div>
+              <Link
+                href="/customers"
+                className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+              >
+                Open customers
+                <ArrowRight className="size-3" />
+              </Link>
+            </div>
+            <ChoiceCards
+              label="Table density"
+              value={hydrated ? density : ""}
+              onChange={setDensity}
+              choices={DENSITIES}
+              columns={2}
+            />
+          </div>
+        </div>
+      </SettingsSection>
+    </SettingsPanel>
+  );
+}
+
+const THEME_NAME: Record<Theme, string> = { dark: "Dark", light: "Light", system: "System" };
+
+/** The real dashboard pieces, drawn small, in the active theme and density. */
+function AppearancePreview({
+  digest,
+  theme,
+  density,
+}: {
+  digest: WeeklyDigest;
+  theme: Theme;
+  density: Density;
+}) {
+  const resolved = useResolvedTheme();
+  const compact = density === "compact";
+  const mrr = digest.kpis.find((k) => k.key === "mrr")!;
+
+  return (
+    <PreviewCard
+      title="Dashboard & table"
+      tip={
+        theme === "system"
+          ? `Following your device, which is in ${resolved} mode right now. Try another theme or row size and watch it change.`
+          : "Try another theme or row size and watch it change here."
+      }
+    >
+      <div className="card-shadow overflow-hidden rounded-xl border border-border bg-bg">
+        {/* Browser-window frame */}
+        <div aria-hidden className="flex items-center gap-1.5 border-b border-border bg-surface px-3 py-2">
+          <span className="size-2 rounded-full bg-fg/15" />
+          <span className="size-2 rounded-full bg-fg/15" />
+          <span className="size-2 rounded-full bg-fg/15" />
+          <span className="ml-2 flex-1 truncate rounded-md bg-fg/[0.05] px-2 py-0.5 text-center text-[10px] text-muted-foreground">
+            aurora · {THEME_NAME[theme].toLowerCase()} · {compact ? "compact" : "comfortable"}
+          </span>
+        </div>
+        <div className="space-y-3 p-3">
+          <div className="rounded-lg border border-border bg-surface p-3.5">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <p className="text-xs text-muted-foreground">Monthly recurring revenue</p>
+                <p className="tabular mt-1 text-lg font-semibold text-fg">{formatCurrency(mrr.value)}</p>
+              </div>
+              <DeltaBadge
+                value={mrr.delta}
+                up={mrr.direction === "up"}
+                good={(mrr.direction === "up") === mrr.positiveIsGood}
+              />
+            </div>
+            <Sparkline data={mrr.spark} color="var(--chart-1)" className="mt-2 h-10 w-full" />
+          </div>
+
+          <div className="overflow-hidden rounded-lg border border-border bg-surface">
+            <div className="flex justify-between border-b border-border px-3.5 py-2 text-[11px] font-medium text-muted-foreground">
+              <span>Customer</span>
+              <span>MRR</span>
+            </div>
+            {digest.topAccounts.map((c) => (
+              <div
+                key={c.id}
+                className={`flex items-center gap-2.5 border-b border-border px-3.5 transition-[padding] duration-200 last:border-0 ${
+                  compact ? "py-1.5" : "py-2.5"
+                }`}
+              >
+                <span
+                  className={`flex shrink-0 items-center justify-center rounded-full font-semibold text-white transition-all duration-200 ${
+                    compact ? "size-5 text-[8px]" : "size-7 text-[10px]"
+                  }`}
+                  style={{ background: avatarColor(c.name) }}
+                >
+                  {initials(c.name)}
+                </span>
+                <div className={`min-w-0 flex-1 ${compact ? "flex items-baseline gap-2" : ""}`}>
+                  <p className="truncate text-xs text-fg">{c.name}</p>
+                  <p className="truncate text-[11px] text-muted-foreground">{c.company}</p>
+                </div>
+                <span className="tabular text-xs text-fg">{formatCurrency(c.mrr)}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-    </SettingsSection>
+    </PreviewCard>
   );
 }

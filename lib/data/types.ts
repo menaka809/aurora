@@ -38,6 +38,15 @@ export type ActivityItem = {
 /** Minimal customer record for client-side search. */
 export type CustomerIndexEntry = { id: string; name: string; email: string; company: string };
 
+/** What the weekly digest email and instant alerts would contain (Settings previews). */
+export type WeeklyDigest = {
+  kpis: Kpi[];
+  topAccounts: { id: string; name: string; company: string; plan: Plan; mrr: number }[];
+  /** Latest example for each instant alert. */
+  failedPayment: { name: string; amount: number } | null;
+  newTrial: { name: string; plan: Plan } | null;
+};
+
 export type Acquisition = {
   channels: Channel[];
   /** Signups in the period. */
