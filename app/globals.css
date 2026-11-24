@@ -132,7 +132,6 @@ body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background-color 0.5s ease, color 0.5s ease;
 }
 /* A fixed background repaints on every scroll; keep it for larger screens. */
 @media (min-width: 768px) {
@@ -146,10 +145,38 @@ body {
   box-shadow: var(--shadow-card);
 }
 
-/* Smooth theme cross-fade on the framed surfaces */
-.theme-tint {
-  transition: background-color 0.5s ease, border-color 0.5s ease,
-    color 0.5s ease;
+/* Theme switch: the whole screen cross-fades at once (a view transition in
+   ThemeSync). Per-element colour transitions are paused for that moment, so
+   nothing lags behind in the old theme. */
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+  transition: none !important;
+}
+/* Settings previews: samples sit on a soft dotted stage with a hint of brand colour. */
+.preview-stage {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(color-mix(in oklab, var(--fg) 13%, transparent) 1px, transparent 1.5px),
+    radial-gradient(420px 220px at 100% 0%, color-mix(in oklab, var(--primary) 12%, transparent), transparent 70%);
+  background-size: 14px 14px, auto;
+}
+
+/* Settings tabs: the newly shown panel eases in. */
+.settings-panel[data-state="active"] {
+  animation: settings-panel-in 0.2s ease-out;
+}
+@keyframes settings-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.3s;
+  animation-timing-function: ease;
 }
 
 /* Frosted glass — reserved for the top KPI cards only. On phones it falls
