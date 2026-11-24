@@ -27,12 +27,15 @@ const ChannelDonutImpl = dynamic(() => import("./chart-bundle").then((m) => m.Ch
 
 function DonutSkeleton() {
   return (
-    <div className="flex flex-col items-center gap-6 sm:flex-row">
-      <Skeleton className="size-[180px] shrink-0 rounded-full" />
-      <div className="w-full space-y-3">
-        {[0, 1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-3 w-full" />
-        ))}
+    // Same breakpoint as the chart (a container query), so nothing jumps on load.
+    <div className="@container">
+      <div className="flex flex-col items-center gap-6 @[26rem]:flex-row">
+        <Skeleton className="size-[180px] shrink-0 rounded-full" />
+        <div className="w-full space-y-3">
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-3 w-full" />
+          ))}
+        </div>
       </div>
     </div>
   );

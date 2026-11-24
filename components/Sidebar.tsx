@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useSyncExternalStore, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
@@ -22,6 +22,18 @@ const isTyping = (e: KeyboardEvent) => {
   return !!el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName));
 };
 
+// Tablets (768–1023px) always get the icon rail, so the content has room.
+// CSS (the md:max-lg: classes below) applies it before JavaScript loads; this
+// hook then switches the markup to the real collapsed layout.
+const TABLET = "(min-width: 768px) and (max-width: 1023.98px)";
+function subscribeTablet(onChange: () => void) {
+  const mq = window.matchMedia(TABLET);
+  mq.addEventListener("change", onChange);
+  return () => mq.removeEventListener("change", onChange);
+}
+const useIsTablet = () =>
+  useSyncExternalStore(subscribeTablet, () => window.matchMedia(TABLET).matches, () => false);
+
 /** Tooltip on the right, only while the sidebar is collapsed and labels are hidden. */
 function Tip({ show, label, children }: { show: boolean; label: ReactNode; children: ReactNode }) {
   if (!show) return children;
@@ -40,7 +52,8 @@ export default function Sidebar({ atRisk, goal }: { atRisk: number; goal: Goal }
   const collapsedRaw = useUI((s) => s.sidebarCollapsed);
   const hydrated = useHydrated();
   const toggle = useUI((s) => s.toggleSidebar);
-  const collapsed = hydrated ? collapsedRaw : false;
+  const tablet = useIsTablet();
+  const collapsed = tablet || (hydrated && collapsedRaw);
 
   // "[" collapses or expands the sidebar, like many desktop apps.
   useEffect(() => {
@@ -63,7 +76,7 @@ export default function Sidebar({ atRisk, goal }: { atRisk: number; goal: Goal }
   return (
     <aside
       className={`sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-border bg-surface transition-[width] duration-300 ease-out md:flex print:hidden ${
-        collapsed ? "w-[74px]" : "w-64"
+        collapsed ? "w-[74px]" : "w-64 md:max-lg:w-[74px]"
       }`}
     >
       {/* Brand row: same height and bottom border as the top bar, so the lines meet. */}
@@ -81,7 +94,7 @@ export default function Sidebar({ atRisk, goal }: { atRisk: number; goal: Goal }
             <Sparkles className="size-[18px]" />
           </span>
           {!collapsed && (
-            <span className="min-w-0 leading-tight">
+            <span className="min-w-0 leading-tight md:max-lg:hidden">
               <span className="block font-semibold tracking-tight text-fg">Aurora</span>
               <span className="block truncate text-[11px] text-muted-foreground">Revenue analytics</span>
             </span>
@@ -93,7 +106,7 @@ export default function Sidebar({ atRisk, goal }: { atRisk: number; goal: Goal }
               type="button"
               onClick={toggle}
               aria-label="Collapse sidebar"
-              className="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-fg/5 hover:text-fg"
+              className="flex size-8 shrink-0 md:max-lg:hidden items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-fg/5 hover:text-fg"
             >
               <PanelLeftClose className="size-[18px]" />
             </button>
@@ -108,7 +121,7 @@ export default function Sidebar({ atRisk, goal }: { atRisk: number; goal: Goal }
             {collapsed ? (
               gi > 0 && <div aria-hidden className="mx-auto mb-4 h-px w-6 bg-border" />
             ) : (
-              <p className="px-3 pb-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <p className="px-3 pb-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground md:max-lg:hidden">
                 {group}
               </p>
             )}
@@ -132,7 +145,8 @@ export default function Sidebar({ atRisk, goal }: { atRisk: number; goal: Goal }
 
       {/* Footer: account (and the expand button while collapsed) */}
       <div className="space-y-1 border-t border-border p-3">
-        {collapsed && (
+        {/* No expand button on tablets: the rail is fixed there. */}
+        {collapsed && !tablet && (
           <Tip show label={toggleLabel}>
             <button
               type="button"
@@ -197,7 +211,7 @@ function NavLink({
               <span className="absolute -right-1 -top-1 size-2 rounded-full bg-warning ring-2 ring-surface" />
             )}
           </span>
-          {!collapsed && <span className="relative whitespace-nowrap">{item.label}</span>}
+          {!collapsed && <span className="relative whitespace-nowrap md:max-lg:hidden">{item.label}</span>}
         </Link>
       </Tip>
 
@@ -208,7 +222,7 @@ function NavLink({
             <Link
               href={AT_RISK_HREF}
               aria-label={`${badge} customers at risk`}
-              className="tabular absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-warning/15 px-2 py-0.5 text-[11px] font-semibold text-warning transition-colors hover:bg-warning/25"
+              className="tabular absolute right-2 top-1/2 -translate-y-1/2 md:max-lg:hidden rounded-full bg-warning/15 px-2 py-0.5 text-[11px] font-semibold text-warning transition-colors hover:bg-warning/25"
             >
               {badge}
             </Link>
@@ -230,7 +244,7 @@ function GoalCard({ goal }: { goal: Goal }) {
   return (
     <Link
       href="/"
-      className="mx-3 mb-3 block rounded-xl border border-border bg-gradient-to-br from-primary/10 via-transparent to-chart-4/10 p-3.5 outline-none transition-colors hover:border-primary/40 focus-visible:ring-2 focus-visible:ring-ring/50"
+      className="mx-3 mb-3 block rounded-xl md:max-lg:hidden border border-border bg-gradient-to-br from-primary/10 via-transparent to-chart-4/10 p-3.5 outline-none transition-colors hover:border-primary/40 focus-visible:ring-2 focus-visible:ring-ring/50"
     >
       <div className="flex items-center justify-between">
         <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">

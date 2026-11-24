@@ -136,8 +136,9 @@ export default function Toolbar({
   const totalColumns = hideable.length + 1;
 
   return (
-    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between print:hidden">
-      <div className="flex items-center gap-2">
+    // The two groups share a row when they fit and wrap onto two rows when not.
+    <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
+      <div className="flex w-full items-center gap-2 md:w-auto">
         <div className="flex h-9 flex-1 items-center gap-2 rounded-lg border border-border bg-surface px-3 focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-primary/15 md:w-72 md:flex-none">
           <Search className="size-4 shrink-0 text-muted-foreground" />
           <input

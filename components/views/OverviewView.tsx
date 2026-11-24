@@ -37,14 +37,14 @@ export default function OverviewView({
     <div className="mx-auto max-w-[1400px] space-y-4 md:space-y-5">
       <RangeShell range={range}>
         {/* KPI cards */}
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 [&>*]:min-w-0">
           {kpis.map((kpi, i) => (
             <KpiCard key={kpi.key} kpi={kpi} index={i} range={range} />
           ))}
         </div>
 
         {/* Revenue + acquisition */}
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid gap-4 lg:grid-cols-3 [&>*]:min-w-0">
           <div className="rise lg:col-span-2" style={delay(2)}>
             <Card>
               <CardHeader
@@ -118,7 +118,7 @@ export default function OverviewView({
         </div>
 
         {/* Activity + goal (not tied to the period) */}
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid gap-4 lg:grid-cols-3 [&>*]:min-w-0">
           <div className="rise lg:col-span-2" style={delay(5)}>
             <Card className="h-full">
               <CardHeader title="Recent activity" subtitle="Latest account events · last 14 days" />

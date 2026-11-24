@@ -98,8 +98,8 @@ export default function CustomerProfile({ c, today }: { c: CP; today: string }) 
       {/* Header */}
       <motion.div variants={rise}>
         <Card className="p-6">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-5">
+            <div className="flex min-w-0 items-center gap-4">
               <span
                 className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-lg font-semibold text-white"
                 style={{ background: avatarColor(c.name) }}
@@ -113,10 +113,10 @@ export default function CustomerProfile({ c, today }: { c: CP; today: string }) 
                   </h2>
                   <StatusBadge status={c.status} />
                 </div>
-                <p className="mt-0.5 text-sm text-muted-foreground">{c.email}</p>
+                <p className="mt-0.5 text-sm text-muted-foreground [overflow-wrap:anywhere]">{c.email}</p>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex shrink-0 gap-2">
               <button
                 onClick={() => setMessageOpen(true)}
                 className="rounded-lg border border-border px-4 py-2 text-sm text-fg transition-colors hover:bg-elevated"
@@ -167,7 +167,7 @@ export default function CustomerProfile({ c, today }: { c: CP; today: string }) 
         </Card>
       </motion.div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-3 [&>*]:min-w-0">
         {/* Main column */}
         <div className="space-y-4 lg:col-span-2">
           {/* Activity timeline */}
@@ -361,7 +361,9 @@ function Detail({
         <Icon aria-hidden className="h-4 w-4 shrink-0" />
         {label}
       </dt>
-      <dd className="mt-0.5 truncate pl-6 text-fg">{value}</dd>
+      <dd className="mt-0.5 truncate pl-6 text-fg" title={value}>
+        {value}
+      </dd>
     </div>
   );
 }
